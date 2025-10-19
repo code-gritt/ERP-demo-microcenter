@@ -54,15 +54,7 @@ export function SiteHeader() {
                                 Landing Page
                             </a>
                         </Button>
-                        <Button variant="ghost" asChild size="sm" className="hidden sm:flex">
-                            <a
-                                href="https://github.com/silicondeck/shadcn-dashboard-landing-template"
-                                rel="noopener noreferrer"
-                                className="dark:text-foreground"
-                            >
-                                GitHub
-                            </a>
-                        </Button>
+
                         <ModeToggle />
                     </div>
                 </div>

@@ -44,7 +44,6 @@ const solutionsItems = [
     { title: 'Resources' },
     { name: 'Documentation', href: '#docs' },
     { name: 'Component Showcase', href: '#showcase' },
-    { name: 'GitHub Repository', href: '#github' },
     { name: 'Design System', href: '#design-system' },
 ];
 
