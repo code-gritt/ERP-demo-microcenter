@@ -222,7 +222,11 @@ export function OrdersTable({ orders, onAddOrder, onEditOrder, onDeleteOrder }: 
                 header: 'Line Items',
                 id: 'lineItems',
                 cell: ({ row }) => (
-                    <Badge variant="secondary">
+                    <Badge
+                        variant="secondary"
+                        className="cursor-pointer"
+                        onClick={() => (window.location.href = `/order-items/${row.original.id}`)}
+                    >
                         {row.original.lineItems} item{row.original.lineItems !== 1 ? 's' : ''}
                     </Badge>
                 ),

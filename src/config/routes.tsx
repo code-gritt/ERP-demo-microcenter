@@ -16,6 +16,7 @@ const Salesmen = lazy(() => import('@/app/salesmen/page'));
 const Customers = lazy(() => import('@/app/customers/page'));
 const Products = lazy(() => import('@/app/products/page'));
 const Orders = lazy(() => import('@/app/orders/page'));
+const OrderItems = lazy(() => import('@/app/orders/order-items/[id]/page'));
 
 // Auth pages
 const SignIn = lazy(() => import('@/app/auth/sign-in/page'));
@@ -77,6 +78,10 @@ export const routes: RouteConfig[] = [
     {
         path: '/orders',
         element: <Orders />,
+    },
+    {
+        path: '/order-items/:id',
+        element: <OrderItems />,
     },
     {
         path: '/products',
