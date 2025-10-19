@@ -11,8 +11,9 @@ export interface Order {
     orderDate: string;
     clientId: string;
     clientName: string;
+    salesmanId: string;
     salesmanName: string;
-    lineItems: string;
+    lineItems: number;
     netAmount: number;
     deliveryRequired: boolean;
     paymentMode: string;
@@ -28,8 +29,9 @@ export interface OrderFormValues {
     orderDate: string;
     clientId: string;
     clientName: string;
+    salesmanId: string;
     salesmanName: string;
-    lineItems: string;
+    lineItems: number;
     netAmount: number;
     deliveryRequired: boolean;
     paymentMode: string;
@@ -43,9 +45,11 @@ export default function ProductsPage() {
         const newOrder: Order = {
             id: Math.max(...orders.map((o) => o.id)) + 1,
             ...orderData,
-            createdBy: 'Alice',
+            lineItems: 0,
+            netAmount: 0,
+            createdBy: 'User',
             createdOn: new Date().toISOString(),
-            modifiedBy: 'Alice',
+            modifiedBy: 'User',
             modifiedOn: new Date().toISOString(),
         };
         setOrders((prev) => [newOrder, ...prev]);
@@ -55,8 +59,8 @@ export default function ProductsPage() {
         setOrders((prev) => prev.filter((o) => o.id !== id));
     };
 
-    const handleEditOrder = (order: Order) => {
-        console.log('Edit order:', order);
+    const handleEditOrder = (updatedOrder: Order) => {
+        setOrders((prev) => prev.map((o) => (o.id === updatedOrder.id ? updatedOrder : o)));
     };
 
     return (
