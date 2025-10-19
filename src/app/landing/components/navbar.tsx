@@ -115,24 +115,16 @@ export function LandingNavbar() {
 
                 {/* Desktop CTA */}
                 <div className="hidden xl:flex items-center space-x-2">
-                    <ModeToggle variant="ghost" />
-
                     <Button variant="outline" asChild className="cursor-pointer">
-                        <a
-                            href={getAppUrl('/dashboard-2')}
-                      
-                            rel="noopener noreferrer"
-                        >
+                        <a href={getAppUrl('/dashboard-2')} rel="noopener noreferrer">
                             <LayoutDashboard className="h-4 w-4 mr-2" />
                             Dashboard
                         </a>
                     </Button>
-                    <Button variant="ghost" asChild className="cursor-pointer">
-                        <a href={getAppUrl('/auth/sign-in')}>Sign In</a>
-                    </Button>
                     <Button asChild className="cursor-pointer">
-                        <a href={getAppUrl('/auth/sign-up')}>Get Started</a>
+                        <a href={getAppUrl('/auth/sign-in-2')}>Sign In</a>
                     </Button>
+                    <ModeToggle variant="ghost" />
                 </div>
 
                 {/* Mobile Menu */}
@@ -284,7 +276,7 @@ export function LandingNavbar() {
                                             asChild
                                             className="cursor-pointer"
                                         >
-                                            <a href={getAppUrl('/auth/sign-in')}>Sign In</a>
+                                            <a href={getAppUrl('/auth/sign-in-2')}>Sign In</a>
                                         </Button>
                                         <Button asChild size="lg" className="cursor-pointer">
                                             <a href={getAppUrl('/auth/sign-up')}>Get Started</a>
