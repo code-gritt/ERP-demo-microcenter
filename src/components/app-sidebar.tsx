@@ -71,11 +71,11 @@ const data = {
                 //     url: '/mail',
                 //     icon: Mail,
                 // },
-                // {
-                //     title: 'Tasks',
-                //     url: '/tasks',
-                //     icon: CheckSquare,
-                // },
+                {
+                    title: 'Tasks',
+                    url: '/tasks',
+                    icon: CheckSquare,
+                },
                 // {
                 //     title: 'Chat',
                 //     url: '/chat',
@@ -86,11 +86,11 @@ const data = {
                 //     url: '/calendar',
                 //     icon: Calendar,
                 // },
-                // {
-                //     title: 'Users',
-                //     url: '/users',
-                //     icon: Users,
-                // },
+                {
+                    title: 'Users',
+                    url: '/users',
+                    icon: Users,
+                },
             ],
         },
         {
