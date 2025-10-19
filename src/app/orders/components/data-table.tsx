@@ -42,6 +42,7 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
+    DialogFooter,
 } from '@/components/ui/dialog';
 
 export interface Order {
@@ -134,33 +135,121 @@ export function OrdersTable({ orders, onAddOrder, onEditOrder, onDeleteOrder }: 
                                 <DialogTitle>Edit Order</DialogTitle>
                             </DialogHeader>
                             {selectedOrder && (
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label>Client ID</label>
-                                        <Input value={selectedOrder.clientId} readOnly />
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Client ID
+                                            </label>
+                                            <Select
+                                                value={selectedOrder.clientId}
+                                                onValueChange={() => {}}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue
+                                                        placeholder={selectedOrder.clientId}
+                                                    />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value={selectedOrder.clientId}>
+                                                        {selectedOrder.clientId}
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Salesman ID
+                                            </label>
+                                            <Select
+                                                value="VINOD SIVADASAN"
+                                                onValueChange={() => {}}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="VINOD SIVADASAN" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="VINOD SIVADASAN">
+                                                        VINOD SIVADASAN
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Payment Mode
+                                            </label>
+                                            <Select
+                                                value={selectedOrder.paymentMode}
+                                                onValueChange={() => {}}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue
+                                                        placeholder={selectedOrder.paymentMode}
+                                                    />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value={selectedOrder.paymentMode}>
+                                                        {selectedOrder.paymentMode}
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Delivery Required
+                                            </label>
+                                            <Select
+                                                value={
+                                                    selectedOrder.deliveryRequired ? 'Yes' : 'No'
+                                                }
+                                                onValueChange={() => {}}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue
+                                                        placeholder={
+                                                            selectedOrder.deliveryRequired
+                                                                ? 'Yes'
+                                                                : 'No'
+                                                        }
+                                                    />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="Yes">Yes</SelectItem>
+                                                    <SelectItem value="No">No</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                     </div>
                                     <div>
-                                        <label>Salesman ID</label>
-                                        <Input value="S001" readOnly />
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Order Date
+                                        </label>
+                                        <Input type="date" defaultValue={selectedOrder.orderDate} />
                                     </div>
                                     <div>
-                                        <label>Payment Mode</label>
-                                        <Input value={selectedOrder.paymentMode} />
-                                    </div>
-                                    <div>
-                                        <label>Delivery Required</label>
-                                        <Input
-                                            value={selectedOrder.deliveryRequired ? 'Yes' : 'No'}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label>Order Date</label>
-                                        <Input value={selectedOrder.orderDate} />
-                                    </div>
-                                    <div>
-                                        <label>Comments</label>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Comments
+                                        </label>
                                         <Input value={selectedOrder.comments} />
                                     </div>
+                                    <DialogFooter>
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => setEditDialogOpen(false)}
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            variant="default"
+                                            onClick={() => {
+                                                onEditOrder(selectedOrder);
+                                                setEditDialogOpen(false);
+                                            }}
+                                        >
+                                            Save Changes
+                                        </Button>
+                                    </DialogFooter>
                                 </div>
                             )}
                         </DialogContent>
@@ -183,9 +272,32 @@ export function OrdersTable({ orders, onAddOrder, onEditOrder, onDeleteOrder }: 
                                 <DialogTitle>Confirm Delete</DialogTitle>
                             </DialogHeader>
                             {selectedOrder && (
-                                <p>
-                                    Are you sure you want to delete order {selectedOrder.orderNo}?
-                                </p>
+                                <div className="text-center">
+                                    <p className="text-yellow-600 mb-4">
+                                        Are you sure you want to delete this order?
+                                    </p>
+                                    <p className="text-gray-500 mb-4">
+                                        All of your data will be permanently removed. This action
+                                        cannot be undone.
+                                    </p>
+                                    <DialogFooter>
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => setDeleteDialogOpen(false)}
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            variant="destructive"
+                                            onClick={() => {
+                                                onDeleteOrder(selectedOrder.id);
+                                                setDeleteDialogOpen(false);
+                                            }}
+                                        >
+                                            Yes, Delete
+                                        </Button>
+                                    </DialogFooter>
+                                </div>
                             )}
                         </DialogContent>
                     </Dialog>
