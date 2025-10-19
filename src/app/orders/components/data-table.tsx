@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
     type ColumnDef,
     type ColumnFiltersState,
@@ -56,7 +56,6 @@ import { restrictToHorizontalAxis } from '@dnd-kit/modifiers';
 import { arrayMove, SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-
 import { useDroppable } from '@dnd-kit/core';
 
 export interface Order {
@@ -285,7 +284,7 @@ export function OrdersTable({ orders, onAddOrder, onEditOrder, onDeleteOrder }: 
         useSensor(KeyboardSensor, {})
     );
 
-    const { isOver, setNodeRef: setDropRef } = useDroppable({
+    const { setNodeRef: setDropRef, isOver } = useDroppable({
         id: 'grouping-zone',
     });
 
@@ -293,12 +292,16 @@ export function OrdersTable({ orders, onAddOrder, onEditOrder, onDeleteOrder }: 
         const { active, over } = event;
         if (over && active.id !== over.id) {
             if (over.id === 'grouping-zone' && !grouping.includes(active.id as string)) {
-                setGrouping([...grouping, active.id as string]);
+                setGrouping((prev) => {
+                    const newGrouping = [...prev, active.id as string];
+                    table.setGrouping(newGrouping); // Update table grouping state
+                    return newGrouping;
+                });
             } else {
-                setColumnOrder((columnOrder) => {
-                    const oldIndex = columnOrder.indexOf(active.id as string);
-                    const newIndex = columnOrder.indexOf(over.id as string);
-                    return arrayMove(columnOrder, oldIndex, newIndex);
+                setColumnOrder((prev) => {
+                    const oldIndex = prev.indexOf(active.id as string);
+                    const newIndex = prev.indexOf(over.id as string);
+                    return arrayMove(prev, oldIndex, newIndex);
                 });
             }
         }
@@ -324,7 +327,15 @@ export function OrdersTable({ orders, onAddOrder, onEditOrder, onDeleteOrder }: 
         onGlobalFilterChange: setGlobalFilter,
         onGroupingChange: setGrouping,
         onColumnOrderChange: setColumnOrder,
+        initialState: {
+            columnOrder: columns.map((col) => col.id || ''),
+        },
     });
+
+    useEffect(() => {
+        // Initialize columnOrder with all column IDs
+        setColumnOrder(columns.map((col) => col.id || ''));
+    }, [columns]);
 
     const handleRefresh = () => {
         setGlobalFilter('');
@@ -595,7 +606,11 @@ export function OrdersTable({ orders, onAddOrder, onEditOrder, onDeleteOrder }: 
                             {table.getHeaderGroups().map((headerGroup) => (
                                 <TableRow key={headerGroup.id}>
                                     <SortableContext
-                                        items={columnOrder}
+                                        items={
+                                            columnOrder.length > 0
+                                                ? columnOrder
+                                                : columns.map((col) => col.id || '')
+                                        }
                                         strategy={horizontalListSortingStrategy}
                                     >
                                         {headerGroup.headers.map((header) => (
@@ -610,7 +625,11 @@ export function OrdersTable({ orders, onAddOrder, onEditOrder, onDeleteOrder }: 
                                 table.getRowModel().rows.map((row) => (
                                     <TableRow key={row.id}>
                                         <SortableContext
-                                            items={columnOrder}
+                                            items={
+                                                columnOrder.length > 0
+                                                    ? columnOrder
+                                                    : columns.map((col) => col.id || '')
+                                            }
                                             strategy={horizontalListSortingStrategy}
                                         >
                                             {row.getVisibleCells().map((cell) => (
