@@ -15,6 +15,7 @@ const Pricing = lazy(() => import('@/app/pricing/page'));
 const Salesmen = lazy(() => import('@/app/salesmen/page'));
 const Customers = lazy(() => import('@/app/customers/page'));
 const Products = lazy(() => import('@/app/products/page'));
+const Orders = lazy(() => import('@/app/orders/page'));
 
 // Auth pages
 const SignIn = lazy(() => import('@/app/auth/sign-in/page'));
@@ -73,6 +74,10 @@ export const routes: RouteConfig[] = [
     },
 
     // Application Routes
+    {
+        path: '/orders',
+        element: <Orders />,
+    },
     {
         path: '/products',
         element: <Products />,
