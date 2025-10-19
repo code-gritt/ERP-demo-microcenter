@@ -13,6 +13,7 @@ const Users = lazy(() => import('@/app/users/page'));
 const FAQs = lazy(() => import('@/app/faqs/page'));
 const Pricing = lazy(() => import('@/app/pricing/page'));
 const Salesmen = lazy(() => import('@/app/salesmen/page'));
+const Customers = lazy(() => import('@/app/customers/page'));
 
 // Auth pages
 const SignIn = lazy(() => import('@/app/auth/sign-in/page'));
@@ -51,7 +52,7 @@ export const routes: RouteConfig[] = [
     // Use relative path "dashboard" instead of "/dashboard" for basename compatibility
     {
         path: '/',
-        element: <Navigate to="dashboard" replace />,
+        element: <Navigate to="/landing" replace />,
     },
 
     // Landing Page
@@ -71,6 +72,10 @@ export const routes: RouteConfig[] = [
     },
 
     // Application Routes
+    {
+        path: '/customers',
+        element: <Customers />,
+    },
     {
         path: '/salesmen',
         element: <Salesmen />,
