@@ -71,7 +71,6 @@ export function ProductsTable({ products }: ProductsTableProps) {
     const [globalFilter, setGlobalFilter] = useState('');
 
     const uniqueCodes = [...new Set(products.map((p) => p.code))];
-    const uniqueCategories = [...new Set(products.map((p) => p.category))];
 
     const columns: ColumnDef<Product>[] = [
         {

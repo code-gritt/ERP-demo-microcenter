@@ -22,7 +22,7 @@ export interface User {
 }
 
 export default function CustomersPage() {
-    const [users, setUsers] = useState<User[]>(initialUsersData);
+    const [users] = useState<User[]>(initialUsersData);
 
     return (
         <BaseLayout title="Customers" description="Manage your customers here">
