@@ -12,7 +12,7 @@ import {
     getPaginationRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import { Search, Filter, Edit, Trash } from 'lucide-react';
+import { Search, Edit, Trash } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,11 +24,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+
 import {
     Select,
     SelectContent,
@@ -83,15 +79,13 @@ interface OrdersTableProps {
     onDeleteOrder: (id: number) => void;
 }
 
-export function OrdersTable({ orders, onAddOrder, onEditOrder, onDeleteOrder }: OrdersTableProps) {
+export function OrdersTable({ orders, onEditOrder, onDeleteOrder }: OrdersTableProps) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-
-    const uniqueOrderNos = [...new Set(orders.map((o) => o.orderNo))];
 
     const columns: ColumnDef<Order>[] = [
         { accessorKey: 'orderNo', header: 'Order No' },
