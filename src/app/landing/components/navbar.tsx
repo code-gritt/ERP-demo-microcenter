@@ -119,7 +119,11 @@ export function LandingNavbar() {
                     <ModeToggle variant="ghost" />
 
                     <Button variant="outline" asChild className="cursor-pointer">
-                        <a href={getAppUrl('/dashboard')} target="_blank" rel="noopener noreferrer">
+                        <a
+                            href={getAppUrl('/dashboard-2')}
+                      
+                            rel="noopener noreferrer"
+                        >
                             <LayoutDashboard className="h-4 w-4 mr-2" />
                             Dashboard
                         </a>

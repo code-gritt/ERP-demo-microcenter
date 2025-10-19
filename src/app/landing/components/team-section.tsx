@@ -145,7 +145,6 @@ export function TeamSection() {
                                         >
                                             <a
                                                 href={member.social.linkedin}
-                                                target="_blank"
                                                 rel="noopener noreferrer"
                                                 aria-label={`${member.name} LinkedIn`}
                                             >
@@ -160,7 +159,6 @@ export function TeamSection() {
                                         >
                                             <a
                                                 href={member.social.github}
-                                                target="_blank"
                                                 rel="noopener noreferrer"
                                                 aria-label={`${member.name} GitHub`}
                                             >
@@ -175,7 +173,6 @@ export function TeamSection() {
                                         >
                                             <a
                                                 href={member.social.website}
-                                                target="_blank"
                                                 rel="noopener noreferrer"
                                                 aria-label={`${member.name} Website`}
                                             >

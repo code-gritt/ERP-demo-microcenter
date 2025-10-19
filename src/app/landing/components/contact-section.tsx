@@ -105,7 +105,6 @@ export function ContactSection() {
                                 >
                                     <a
                                         href="https://github.com/your-erp-repo"
-                                        target="_blank"
                                         rel="noopener noreferrer"
                                     >
                                         View Repository
