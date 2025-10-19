@@ -13,16 +13,7 @@ import {
     getGroupedRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import {
-    Search,
-    Calendar,
-    RefreshCw,
-    FileText,
-    Plus,
-    Edit,
-    Trash,
-    GripVertical,
-} from 'lucide-react';
+import { Search, RefreshCw, FileText, Plus, Edit, Trash, GripVertical } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -390,7 +381,6 @@ export function OrdersTable({ orders, onAddOrder, onEditOrder, onDeleteOrder }: 
             onDragEnd={handleDragEnd}
         >
             <div className="w-full space-y-4">
-                <h2 className="text-2xl font-bold">Orders</h2>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <span>Filter by Date Range</span>
