@@ -5,6 +5,7 @@ import { BaseLayout } from '@/components/layouts/base-layout';
 import { ProductsTable } from './components/data-table';
 import { GET_PRODUCTS_QUERY } from '@/lib/queries';
 import type { ProductsResponse } from '@/lib/types';
+import { LoaderSpinner } from '@/components/ui/Loader';
 
 export interface ProductTable {
     id: string;
@@ -49,9 +50,7 @@ export default function ProductsPage() {
     if (loading) {
         return (
             <BaseLayout title="Products" description="Manage your products here">
-                <div className="flex justify-center items-center h-64">
-                    <div className="text-lg">Loading products...</div>
-                </div>
+                <LoaderSpinner />
             </BaseLayout>
         );
     }

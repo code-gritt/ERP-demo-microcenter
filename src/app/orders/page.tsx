@@ -5,6 +5,7 @@ import { BaseLayout } from '@/components/layouts/base-layout';
 import { OrdersTable } from './components/data-table';
 import { GET_ORDERS_QUERY, GET_CUSTOMERS_QUERY, GET_SALESMEN_QUERY } from '@/lib/queries';
 import type { OrdersResponse, CustomersResponse, SalesmenResponse } from '@/lib/types';
+import { LoaderSpinner } from '@/components/ui/Loader';
 
 export interface OrderTable {
     id: string;
@@ -71,9 +72,7 @@ export default function OrdersPage() {
     if (ordersLoading) {
         return (
             <BaseLayout title="Orders" description="Manage your orders here">
-                <div className="flex justify-center items-center h-64">
-                    <div className="text-lg">Loading orders...</div>
-                </div>
+                <LoaderSpinner />
             </BaseLayout>
         );
     }

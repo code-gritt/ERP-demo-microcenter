@@ -5,6 +5,7 @@ import { BaseLayout } from '@/components/layouts/base-layout';
 import { DataTable } from './components/data-table';
 import { GET_CUSTOMERS_QUERY } from '@/lib/queries';
 import type { CustomersResponse } from '@/lib/types';
+import { LoaderSpinner } from '@/components/ui/Loader';
 
 interface CustomerTable {
     id: string;
@@ -17,7 +18,7 @@ interface CustomerTable {
 export default function CustomersPage() {
     const { data, loading, error } = useQuery<CustomersResponse>(GET_CUSTOMERS_QUERY);
 
-    // Function must come first
+    // Generate avatar initials from name
     const generateAvatar = (name: string) => {
         const names = name.split(' ');
         if (names.length >= 2) {
@@ -26,6 +27,7 @@ export default function CustomersPage() {
         return name.substring(0, 2).toUpperCase();
     };
 
+    // Map query data to CustomerTable format
     const customers: CustomerTable[] =
         data?.customers?.map((customer) => ({
             id: customer.cu_code,
@@ -35,16 +37,16 @@ export default function CustomersPage() {
             avatar: generateAvatar(customer.cu_name),
         })) || [];
 
+    // Render loading state with LoaderSpinner
     if (loading) {
         return (
             <BaseLayout title="Customers" description="Manage your customers here">
-                <div className="flex justify-center items-center h-64">
-                    <div className="text-lg">Loading customers...</div>
-                </div>
+                <LoaderSpinner />
             </BaseLayout>
         );
     }
 
+    // Render error state
     if (error) {
         return (
             <BaseLayout title="Customers" description="Manage your customers here">
@@ -55,6 +57,7 @@ export default function CustomersPage() {
         );
     }
 
+    // Render data table
     return (
         <BaseLayout title="Customers" description="Manage your customers here">
             <div className="flex flex-col gap-4">
