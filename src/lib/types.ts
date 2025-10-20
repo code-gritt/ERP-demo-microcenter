@@ -18,6 +18,18 @@ export interface Salesman {
     __typename: string;
 }
 
+export interface Customer {
+    cu_code: string;
+    cu_name: string;
+    address: string;
+    email_id: string;
+    __typename: string;
+}
+
+export interface CustomersResponse {
+    customers: Customer[];
+}
+
 export interface SalesmenResponse {
     salesmen: Salesman[];
 }

@@ -18,3 +18,15 @@ export const GET_SALESMEN_QUERY = gql`
         }
     }
 `;
+
+export const GET_CUSTOMERS_QUERY = gql`
+    query GetCustomers {
+        customers {
+            cu_code
+            cu_name
+            address
+            email_id
+            __typename
+        }
+    }
+`;

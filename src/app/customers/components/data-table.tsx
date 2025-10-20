@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/table';
 
 interface User {
-    id: number;
+    id: string;
     name: string;
     address: string;
     email: string;
@@ -48,7 +48,7 @@ export function DataTable({ users }: DataTableProps) {
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
 
-    const uniqueIds = [...new Set(users.map((user) => user.id))].sort((a, b) => a - b);
+    const uniqueIds = [...new Set(users.map((user) => user.id))].sort();
     const uniqueNames = [...new Set(users.map((user) => user.name))].sort();
 
     const columns: ColumnDef<User>[] = [
@@ -68,13 +68,13 @@ export function DataTable({ users }: DataTableProps) {
                                 <DropdownMenuCheckboxItem
                                     key={id}
                                     checked={
-                                        (column.getFilterValue() as number[] | undefined)?.includes(
+                                        (column.getFilterValue() as string[] | undefined)?.includes(
                                             id
                                         ) ?? false
                                     }
                                     onCheckedChange={(checked) => {
                                         const filterValues =
-                                            (column.getFilterValue() as number[] | undefined) ?? [];
+                                            (column.getFilterValue() as string[] | undefined) ?? [];
                                         if (checked) column.setFilterValue([...filterValues, id]);
                                         else
                                             column.setFilterValue(
@@ -93,10 +93,11 @@ export function DataTable({ users }: DataTableProps) {
                 <span className="font-mono text-sm text-muted-foreground">{row.original.id}</span>
             ),
             filterFn: (row, columnId, filterValues) => {
-                if (!filterValues || (filterValues as number[]).length === 0) return true;
-                return (filterValues as number[]).includes(row.getValue<number>(columnId));
+                if (!filterValues || (filterValues as string[]).length === 0) return true;
+                return (filterValues as string[]).includes(row.getValue<string>(columnId));
             },
             enableSorting: true,
+            size: 90,
         },
         {
             accessorKey: 'name',
@@ -140,7 +141,9 @@ export function DataTable({ users }: DataTableProps) {
                 return (
                     <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
-                            <AvatarFallback>{user.avatar}</AvatarFallback>
+                            <AvatarFallback className="text-xs font-medium">
+                                {user.avatar}
+                            </AvatarFallback>
                         </Avatar>
                         <span className="font-medium">{user.name}</span>
                     </div>
@@ -155,13 +158,13 @@ export function DataTable({ users }: DataTableProps) {
         {
             accessorKey: 'address',
             header: 'Address',
-            cell: ({ row }) => <span>{row.original.address}</span>,
+            cell: ({ row }) => <span className="text-sm">{row.original.address}</span>,
             enableSorting: true,
         },
         {
             accessorKey: 'email',
             header: 'Email Address',
-            cell: ({ row }) => <span>{row.original.email}</span>,
+            cell: ({ row }) => <span className="text-sm">{row.original.email}</span>,
             enableSorting: true,
         },
     ];
@@ -214,6 +217,15 @@ export function DataTable({ users }: DataTableProps) {
                                                   header.column.columnDef.header,
                                                   header.getContext()
                                               )}
+                                        {header.column.getCanSort() && (
+                                            <span>
+                                                {header.column.getIsSorted() === 'asc'
+                                                    ? ' ↑'
+                                                    : header.column.getIsSorted() === 'desc'
+                                                    ? ' ↓'
+                                                    : ''}
+                                            </span>
+                                        )}
                                     </TableHead>
                                 ))}
                             </TableRow>

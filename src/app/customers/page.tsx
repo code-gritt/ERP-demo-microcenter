@@ -1,34 +1,65 @@
-// CustomersPage.tsx
 'use client';
 
-import { useState } from 'react';
+import { useQuery } from '@apollo/client/react';
 import { BaseLayout } from '@/components/layouts/base-layout';
-import initialUsersData from './data.json';
 import { DataTable } from './components/data-table';
+import { GET_CUSTOMERS_QUERY } from '@/lib/queries';
+import type { CustomersResponse } from '@/lib/types';
 
-// Use a single User type everywhere
-export interface User {
-    id: number;
+interface CustomerTable {
+    id: string;
     name: string;
+    address: string;
     email: string;
     avatar: string;
-    role: string;
-    plan: string;
-    billing: string;
-    status: string;
-    joinedDate: string;
-    lastLogin: string;
-    address: string;
 }
 
 export default function CustomersPage() {
-    const [users] = useState<User[]>(initialUsersData);
+    const { data, loading, error } = useQuery<CustomersResponse>(GET_CUSTOMERS_QUERY);
+
+    // Transform API data to table format
+    const customers: CustomerTable[] =
+        data?.customers?.map((customer) => ({
+            id: customer.cu_code,
+            name: customer.cu_name,
+            address: customer.address,
+            email: customer.email_id,
+            avatar: generateAvatar(customer.cu_name),
+        })) || [];
+
+    const generateAvatar = (name: string) => {
+        const names = name.split(' ');
+        if (names.length >= 2) {
+            return `${names[0][0]}${names[1][0]}`.toUpperCase();
+        }
+        return name.substring(0, 2).toUpperCase();
+    };
+
+    if (loading) {
+        return (
+            <BaseLayout title="Customers" description="Manage your customers here">
+                <div className="flex justify-center items-center h-64">
+                    <div className="text-lg">Loading customers...</div>
+                </div>
+            </BaseLayout>
+        );
+    }
+
+    if (error) {
+        return (
+            <BaseLayout title="Customers" description="Manage your customers here">
+                <div className="flex justify-center items-center h-64">
+                    <div className="text-red-500">Error loading customers: {error.message}</div>
+                </div>
+            </BaseLayout>
+        );
+    }
 
     return (
         <BaseLayout title="Customers" description="Manage your customers here">
             <div className="flex flex-col gap-4">
                 <div className="@container/main px-4 lg:px-6 mt-8 lg:mt-12">
-                    <DataTable users={users} />
+                    <DataTable users={customers} />
                 </div>
             </div>
         </BaseLayout>
