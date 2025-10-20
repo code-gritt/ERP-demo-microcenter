@@ -10,6 +10,7 @@ export interface User {
     company_name: string;
     email_id: string;
     mobile_no: string;
+    initials?: string;
 }
 
 export interface Salesman {

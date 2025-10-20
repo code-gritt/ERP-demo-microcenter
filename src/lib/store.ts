@@ -7,6 +7,7 @@ export interface User {
     company_name: string;
     email_id: string;
     mobile_no: string;
+    initials?: string; // ✅
 }
 
 interface AuthState {
@@ -22,9 +23,20 @@ const initialState = saved
     ? { ...JSON.parse(saved), isAuthenticated: true }
     : { token: null, user: null, isAuthenticated: false };
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
     ...initialState,
-    login: (token, user) => {
+    login: (token, userData) => {
+        // ✅ AUTO GENERATE INITIALS
+        const user = {
+            ...userData,
+            initials: userData.user_name
+                .split(' ')
+                .map((n) => n[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2),
+        };
+
         const state = { token, user, isAuthenticated: true };
         set(state);
         localStorage.setItem('auth-storage', JSON.stringify(state));

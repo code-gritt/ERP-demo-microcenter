@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Menu, LayoutDashboard, ChevronDown, X, Moon, Sun } from 'lucide-react';
+import { Menu, LayoutDashboard, ChevronDown, X, Moon, Sun, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     NavigationMenu,
@@ -11,13 +11,21 @@ import {
     NavigationMenuList,
     NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getAppUrl } from '@/lib/utils';
 import { Logo } from '@/components/logo';
 import { MegaMenu } from '@/components/landing/mega-menu';
 import { ModeToggle } from '@/components/mode-toggle';
 import { useTheme } from '@/hooks/use-theme';
+import { useAuthStore } from '@/lib/store';
 
 const navigationItems = [
     { name: 'Home', href: '/landing' },
@@ -29,7 +37,6 @@ const navigationItems = [
     { name: 'Contact', href: '#contact' },
 ];
 
-// Solutions menu items for mobile
 const solutionsItems = [
     { title: 'Browse Products' },
     { name: 'Free Blocks', href: '#free-blocks' },
@@ -47,15 +54,11 @@ const solutionsItems = [
     { name: 'Design System', href: '#design-system' },
 ];
 
-// Smooth scroll function
 const smoothScrollTo = (targetId: string) => {
     if (targetId.startsWith('#')) {
         const element = document.querySelector(targetId);
         if (element) {
-            element.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start',
-            });
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
 };
@@ -64,6 +67,16 @@ export function LandingNavbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [solutionsOpen, setSolutionsOpen] = useState(false);
     const { setTheme, theme } = useTheme();
+    const { user, logout } = useAuthStore();
+
+    const getInitials = (name: string) => {
+        return name
+            .split(' ')
+            .map((n) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+    };
 
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
@@ -113,21 +126,64 @@ export function LandingNavbar() {
                     </NavigationMenuList>
                 </NavigationMenu>
 
-                {/* Desktop CTA */}
+                {/* Desktop CTA - AUTH CONDITIONAL */}
                 <div className="hidden xl:flex items-center space-x-2">
-                    <Button variant="outline" asChild className="cursor-pointer">
-                        <a href={getAppUrl('/dashboard-2')} rel="noopener noreferrer">
-                            <LayoutDashboard className="h-4 w-4 mr-2" />
-                            Dashboard
-                        </a>
-                    </Button>
-                    <Button asChild className="cursor-pointer">
-                        <a href={getAppUrl('/auth/sign-in-2')}>Sign In</a>
-                    </Button>
+                    {user ? (
+                        <>
+                            <Button variant="outline" asChild className="cursor-pointer">
+                                <a href="/dashboard">
+                                    <LayoutDashboard className="h-4 w-4 mr-2" />
+                                    Dashboard
+                                </a>
+                            </Button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="h-8 w-8 rounded-full">
+                                        <Avatar className="h-8 w-8">
+                                            <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                                                {getInitials(user.user_name)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-56" align="end">
+                                    <div className="flex items-center gap-2 p-2">
+                                        <Avatar className="h-8 w-8">
+                                            <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                                                {getInitials(user.user_name)}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div className="space-y-1">
+                                            <p className="text-sm font-medium">{user.user_name}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {user.designation}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <DropdownMenuItem onClick={logout} className="cursor-pointer">
+                                        <LogOut className="mr-2 h-4 w-4" />
+                                        Log out
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </>
+                    ) : (
+                        <>
+                            <Button variant="outline" asChild className="cursor-pointer">
+                                <a href="/dashboard">
+                                    <LayoutDashboard className="h-4 w-4 mr-2" />
+                                    Dashboard
+                                </a>
+                            </Button>
+                            <Button asChild className="cursor-pointer">
+                                <a href="/auth/sign-in-2">Sign In</a>
+                            </Button>
+                        </>
+                    )}
                     <ModeToggle variant="ghost" />
                 </div>
 
-                {/* Mobile Menu */}
+                {/* Mobile Menu - SAME AS BEFORE */}
                 <Sheet open={isOpen} onOpenChange={setIsOpen}>
                     <SheetTrigger asChild className="xl:hidden">
                         <Button variant="ghost" size="icon" className="cursor-pointer">
@@ -140,7 +196,6 @@ export function LandingNavbar() {
                         className="w-full sm:w-[400px] p-0 gap-0 [&>button]:hidden overflow-hidden flex flex-col"
                     >
                         <div className="flex flex-col h-full">
-                            {/* Header */}
                             <SheetHeader className="space-y-0 p-4 pb-2 border-b">
                                 <div className="flex items-center gap-2">
                                     <div className="p-2 bg-primary/10 rounded-lg">
@@ -161,7 +216,6 @@ export function LandingNavbar() {
                                             <Moon className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                                             <Sun className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
                                         </Button>
-
                                         <Button
                                             variant="ghost"
                                             size="icon"
@@ -174,7 +228,6 @@ export function LandingNavbar() {
                                 </div>
                             </SheetHeader>
 
-                            {/* Navigation Links */}
                             <div className="flex-1 overflow-y-auto">
                                 <nav className="p-6 space-y-1">
                                     {navigationItems.map((item) => (
@@ -253,9 +306,8 @@ export function LandingNavbar() {
                                 </nav>
                             </div>
 
-                            {/* Footer Actions */}
+                            {/* Footer Actions - AUTH CONDITIONAL */}
                             <div className="border-t p-6 space-y-4">
-                                {/* Primary Actions */}
                                 <div className="space-y-3">
                                     <Button
                                         variant="outline"
@@ -263,25 +315,37 @@ export function LandingNavbar() {
                                         asChild
                                         className="w-full cursor-pointer"
                                     >
-                                        <a href={getAppUrl('/dashboard')}>
+                                        <a href="/dashboard">
                                             <LayoutDashboard className="size-4" />
                                             Dashboard
                                         </a>
                                     </Button>
 
-                                    <div className="grid grid-cols-2 gap-3">
+                                    {user ? (
                                         <Button
-                                            variant="outline"
+                                            variant="destructive"
                                             size="lg"
-                                            asChild
-                                            className="cursor-pointer"
+                                            className="w-full"
+                                            onClick={logout}
                                         >
-                                            <a href={getAppUrl('/auth/sign-in-2')}>Sign In</a>
+                                            <LogOut className="size-4 mr-2" />
+                                            Log out ({getInitials(user.user_name)})
                                         </Button>
-                                        <Button asChild size="lg" className="cursor-pointer">
-                                            <a href={getAppUrl('/auth/sign-up')}>Get Started</a>
-                                        </Button>
-                                    </div>
+                                    ) : (
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <Button
+                                                variant="outline"
+                                                size="lg"
+                                                asChild
+                                                className="cursor-pointer"
+                                            >
+                                                <a href="/auth/sign-in-2">Sign In</a>
+                                            </Button>
+                                            <Button size="lg" className="cursor-pointer">
+                                                <a href="/auth/sign-up">Get Started</a>
+                                            </Button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
