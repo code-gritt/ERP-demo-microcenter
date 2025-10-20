@@ -82,7 +82,7 @@ export const UPDATE_ORDER_MUTATION = gql`
 `;
 
 export const DELETE_ORDER_MUTATION = gql`
-    mutation DeleteOrder($orderId: String!) {
+    mutation DeleteOrder($orderId: ID!) {
         deleteOrder(orderId: $orderId) {
             status
             message
