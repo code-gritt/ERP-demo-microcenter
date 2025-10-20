@@ -15,6 +15,7 @@ import {
 } from '@tanstack/react-table';
 import { Search, RefreshCw, FileText, Plus, Edit, Trash } from 'lucide-react';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -163,7 +164,9 @@ export function OrdersTable({
                 accessorKey: 'lineItems',
                 header: 'Line Items',
                 cell: ({ row }) => (
-                    <Badge variant="secondary">{row.original.lineItems} items</Badge>
+                    <Link to={`/order-items/${row.original.id}`}>
+                        <Badge variant="secondary">{row.original.lineItems} items</Badge>
+                    </Link>
                 ),
                 size: 100,
             },

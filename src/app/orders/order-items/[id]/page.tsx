@@ -2,6 +2,8 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { useQuery } from '@apollo/client/react';
+import { gql } from '@apollo/client';
 import {
     type ColumnDef,
     type ColumnFiltersState,
@@ -32,6 +34,13 @@ import {
     DialogTrigger,
     DialogFooter,
 } from '@/components/ui/dialog';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 import * as XLSX from 'xlsx';
 import {
@@ -50,10 +59,220 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useDroppable } from '@dnd-kit/core';
 
+// Define interfaces
+export interface Company {
+    company_id: string;
+    company_name: string;
+}
+
+export interface User {
+    user_id: string;
+    user_name: string;
+    designation: string;
+    company_name: string;
+    email_id: string;
+    mobile_no: string;
+    initials?: string;
+}
+
+export interface Salesman {
+    sm_code: string;
+    sm_name: string;
+    __typename: string;
+}
+
+export interface Customer {
+    cu_code: string;
+    cu_name: string;
+    address: string;
+    email_id: string;
+    __typename: string;
+}
+
+export interface Product {
+    prod_code: string;
+    product_name: string;
+    brand: string;
+    prod_cat: string;
+    packing: string;
+    unit_price: number;
+    cost_price: number;
+    vat_perc: number;
+    stock_available: number;
+    __typename: string;
+}
+
+export interface ProductsResult {
+    products: Product[];
+    totalCount: number;
+    __typename: string;
+}
+
+export interface ProductsResponse {
+    getProducts: ProductsResult;
+}
+
+export interface CustomersResponse {
+    customers: Customer[];
+}
+
+export interface SalesmenResponse {
+    salesmen: Salesman[];
+}
+
+export interface CompaniesResponse {
+    companies: Company[];
+}
+
+export interface LoginResponse {
+    login: {
+        token: string;
+        user: User;
+    } | null;
+}
+
+export interface LoginVariables {
+    userName: string;
+    password: string;
+    companyId: string;
+}
+
+export interface Order {
+    order_id: string;
+    order_no: string;
+    order_date: string;
+    client_id: string;
+    client_name: string;
+    salesman_name: string;
+    line_items_total: number | null;
+    no_of_line_items: number;
+    vat_amount: number | null;
+    net_amount: number | null;
+    delivery_required: string;
+    payment_mode: string;
+    comments: string;
+    created_by: string;
+    created_on: string;
+    modified_by: string | null;
+    modified_on: string | null;
+    deleted_by: string | null;
+    deleted_on: string | null;
+    __typename: string;
+}
+
+export interface OrdersResult {
+    totalCount: number;
+    orders: Order[];
+    __typename: string;
+}
+
+export interface OrdersResponse {
+    getOrders: OrdersResult;
+}
+
+export interface AddOrderResponse {
+    addOrder: {
+        status: string;
+        message: string;
+        orders: {
+            order_no: string;
+            order_date: string;
+            payment_mode: string;
+            created_by: string;
+            created_on: string;
+            __typename: string;
+        };
+        __typename: string;
+    };
+}
+
+export interface AddOrderVariables {
+    clientId: string;
+    salesmanId: string;
+    orderDate?: string;
+    deliveryRequired?: string;
+    paymentMode?: string;
+    comments?: string;
+}
+
+export interface UpdateOrderResponse {
+    updateOrder: {
+        status: string;
+        message: string;
+        orders: {
+            order_date: string;
+            order_no: string;
+            __typename: string;
+        };
+        __typename: string;
+    };
+}
+
+export interface UpdateOrderVariables {
+    orderId: string;
+    clientId?: string;
+    salesmanId?: string;
+    orderDate?: string;
+    deliveryRequired?: string;
+    paymentMode?: string;
+    comments?: string;
+}
+
+export interface DeleteOrderResponse {
+    deleteOrder: {
+        status: string;
+        message: string;
+        __typename: string;
+    };
+}
+
+export interface DeleteOrderVariables {
+    orderId: string;
+}
+
+export interface GetProductsResponse {
+    products: {
+        id: string;
+        product_code: string;
+        product_name: string;
+        category: string;
+        brand: string;
+        packing: string;
+        price: number;
+        vat_percent: number;
+        stock_available: boolean;
+    }[];
+}
+
+export interface AddOrderItemResponse {
+    addOrderItem: {
+        status: string;
+        message: string;
+        orderItem: {
+            id: string;
+            order_id: string;
+            product_id: string;
+            vat_amount: number;
+            price: number;
+            __typename: string;
+        };
+        __typename: string;
+    };
+}
+
+export interface AddOrderItemVariables {
+    orderId: string;
+    productId: string;
+    packing?: string;
+    price?: number;
+    qty?: number;
+    vatPerc?: number;
+}
+
 // Define the OrderItem interface
 interface OrderItem {
     id: number;
-    itemNo: number;
+    itemNo: string;
     productName: string;
     packing: string;
     price: number;
@@ -66,7 +285,7 @@ interface OrderItem {
 
 // Define the NewItemFormValues interface
 interface NewItemFormValues {
-    itemNo: number;
+    itemNo: string;
     productName: string;
     packing: string;
     price: number;
@@ -74,114 +293,23 @@ interface NewItemFormValues {
     vatPercent: number;
     category: string;
     brand: string;
-    stockAvailable: boolean;
+    costPrice: number;
+    stock: number;
 }
 
-// Define mockOrderItems with an index signature
-const mockOrderItems: { [key: number]: OrderItem[] } = {
-    1: [
-        {
-            id: 1,
-            itemNo: 12,
-            productName: 'Classic T-Shirt',
-            packing: 'Pack',
-            price: 6000,
-            quantity: 10,
-            lineTotal: 60000,
-            vatPercent: 18,
-            vatAmount: 10800,
-            netAmount: 70800,
-        },
-        {
-            id: 2,
-            itemNo: 23,
-            productName: 'Wool Coat',
-            packing: 'Bag',
-            price: 10000,
-            quantity: 5,
-            lineTotal: 50000,
-            vatPercent: 18,
-            vatAmount: 9000,
-            netAmount: 59000,
-        },
-        {
-            id: 3,
-            itemNo: 34,
-            productName: 'Floral Dress',
-            packing: 'Pack',
-            price: 5500,
-            quantity: 10,
-            lineTotal: 55000,
-            vatPercent: 18,
-            vatAmount: 9900,
-            netAmount: 64900,
-        },
-    ],
-    2: [
-        {
-            id: 1,
-            itemNo: 12,
-            productName: 'Classic T-Shirt',
-            packing: 'Pack',
-            price: 6000,
-            quantity: 10,
-            lineTotal: 60000,
-            vatPercent: 18,
-            vatAmount: 10800,
-            netAmount: 70800,
-        },
-        {
-            id: 2,
-            itemNo: 23,
-            productName: 'Wool Coat',
-            packing: 'Bag',
-            price: 10000,
-            quantity: 5,
-            lineTotal: 50000,
-            vatPercent: 5,
-            vatAmount: 2500,
-            netAmount: 52500,
-        },
-        {
-            id: 3,
-            itemNo: 34,
-            productName: 'Floral Dress',
-            packing: 'Pack',
-            price: 5500,
-            quantity: 10,
-            lineTotal: 55000,
-            vatPercent: 18,
-            vatAmount: 9900,
-            netAmount: 64900,
-        },
-    ],
-    3: [
-        {
-            id: 1,
-            itemNo: 12,
-            productName: 'Classic T-Shirt',
-            packing: 'Pack',
-            price: 6000,
-            quantity: 10,
-            lineTotal: 60000,
-            vatPercent: 18,
-            vatAmount: 10800,
-            netAmount: 70800,
-        },
-        {
-            id: 2,
-            itemNo: 23,
-            productName: 'Wool Coat',
-            packing: 'Bag',
-            price: 10000,
-            quantity: 5,
-            lineTotal: 50000,
-            vatPercent: 18,
-            vatAmount: 9000,
-            netAmount: 59000,
-        },
-    ],
-};
+// Define the GET_PRODUCTS_QUERY
+const GET_PRODUCTS_QUERY = gql`
+    query GetProducts($limit: Int, $offset: Int, $filters: ProductFilters) {
+        getProducts(limit: $limit, offset: $offset, filters: $filters) {
+            products {
+                prod_code
+                stock_available
+                unit_price
+                product_name
+            }
+        }
+    }
+`;
 
 const DraggableTableHeader = ({ header }: { header: any }) => {
     const { attributes, isDragging, listeners, setNodeRef, transform } = useSortable({
@@ -231,14 +359,14 @@ const DragAlongCell = ({ cell }: { cell: any }) => {
 export default function OrderItemsPage() {
     const { id } = useParams();
     const orderId = Number(id);
-    const [items, setItems] = useState<OrderItem[]>(mockOrderItems[orderId] || []);
+    const [items, setItems] = useState<OrderItem[]>([]);
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
     const [columnOrder, setColumnOrder] = useState<string[]>([]);
     const [addDialogOpen, setAddDialogOpen] = useState(false);
     const [newItem, setNewItem] = useState<NewItemFormValues>({
-        itemNo: 0,
+        itemNo: '',
         productName: '',
         packing: '',
         price: 0,
@@ -246,8 +374,14 @@ export default function OrderItemsPage() {
         vatPercent: 0,
         category: '',
         brand: '',
-        stockAvailable: false,
+        costPrice: 0,
+        stock: 0,
     });
+
+    const { data } = useQuery<ProductsResponse>(GET_PRODUCTS_QUERY, {
+        variables: { limit: 100, offset: 0, filters: {} },
+    });
+    const products = data?.getProducts?.products || [];
 
     const columns: ColumnDef<OrderItem>[] = useMemo(
         () => [
@@ -345,33 +479,39 @@ export default function OrderItemsPage() {
     };
 
     const handleAddSave = () => {
-        const newItemData = {
-            id: items.length + 1,
-            itemNo: newItem.itemNo,
-            productName: newItem.productName,
-            packing: newItem.packing,
-            price: newItem.price,
-            quantity: newItem.quantity,
-            lineTotal: newItem.price * newItem.quantity,
-            vatPercent: newItem.vatPercent,
-            vatAmount: (newItem.price * newItem.quantity * newItem.vatPercent) / 100,
-            netAmount:
-                newItem.price * newItem.quantity +
-                (newItem.price * newItem.quantity * newItem.vatPercent) / 100,
-        };
-        setItems((prev) => [newItemData, ...prev]);
-        setAddDialogOpen(false);
-        setNewItem({
-            itemNo: 0,
-            productName: '',
-            packing: '',
-            price: 0,
-            quantity: 0,
-            vatPercent: 0,
-            category: '',
-            brand: '',
-            stockAvailable: false,
-        });
+        const selectedProduct = products.find((p) => p.product_name === newItem.productName);
+        if (
+            selectedProduct &&
+            newItem.quantity > 0 &&
+            selectedProduct.stock_available >= newItem.quantity
+        ) {
+            const newItemData = {
+                id: items.length + 1,
+                itemNo: selectedProduct.prod_code,
+                productName: selectedProduct.product_name,
+                packing: '', // Packing data not available in response, to be updated if needed
+                price: selectedProduct.unit_price,
+                quantity: newItem.quantity,
+                lineTotal: selectedProduct.unit_price * newItem.quantity,
+                vatPercent: 0, // VAT percentage not available in response, to be updated if needed
+                vatAmount: 0, // To be calculated with proper VAT data
+                netAmount: selectedProduct.unit_price * newItem.quantity, // Simplified without VAT for now
+            };
+            setItems((prev) => [newItemData, ...prev]);
+            setAddDialogOpen(false);
+            setNewItem({
+                itemNo: '',
+                productName: '',
+                packing: '',
+                price: 0,
+                quantity: 0,
+                vatPercent: 0,
+                category: '',
+                brand: '',
+                costPrice: 0,
+                stock: 0,
+            });
+        }
     };
 
     const totalAmount = items.reduce((sum, item) => sum + item.netAmount, 0);
@@ -400,7 +540,7 @@ export default function OrderItemsPage() {
                         Back Page
                     </Button>
                     <span className="ml-2">
-                        Client Name: JAIPUR SYNTEX LIMITED | Order No: SS002
+                        Client Name: SHANGHAI HUA SHEN IMPORT AND EXPORT CO. LTD. | Order No: SS009
                     </span>
                 </div>
                 <div className="flex justify-between mb-4">
@@ -427,98 +567,91 @@ export default function OrderItemsPage() {
                                     <label className="block text-sm font-medium text-gray-700">
                                         Select Product *
                                     </label>
-                                    <Input placeholder="Search Product" />
+                                    <Select
+                                        onValueChange={(value) => {
+                                            const prod = products.find(
+                                                (p) => p.product_name === value
+                                            );
+                                            if (prod) {
+                                                setNewItem({
+                                                    ...newItem,
+                                                    itemNo: prod.prod_code,
+                                                    productName: prod.product_name,
+                                                    packing: '', // Packing not available in response
+                                                    price: prod.unit_price,
+                                                    quantity: newItem.quantity,
+                                                    vatPercent: 0, // VAT not available in response
+                                                    category: '',
+                                                    brand: '',
+                                                    costPrice: 0,
+                                                    stock: prod.stock_available,
+                                                });
+                                            }
+                                        }}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select product" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {products.map((prod) => (
+                                                <SelectItem
+                                                    key={prod.prod_code}
+                                                    value={prod.product_name}
+                                                >
+                                                    {prod.product_name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
                                             Product ID
                                         </label>
-                                        <Input
-                                            value={newItem.itemNo}
-                                            onChange={(e) =>
-                                                setNewItem({
-                                                    ...newItem,
-                                                    itemNo: Number(e.target.value),
-                                                })
-                                            }
-                                        />
+                                        <Input value={newItem.itemNo} disabled />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
                                             Packing
                                         </label>
-                                        <Input
-                                            value={newItem.packing}
-                                            onChange={(e) =>
-                                                setNewItem({ ...newItem, packing: e.target.value })
-                                            }
-                                        />
+                                        <Input value={newItem.packing} disabled />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
                                             Unit Price
                                         </label>
-                                        <Input
-                                            value={newItem.price}
-                                            onChange={(e) =>
-                                                setNewItem({
-                                                    ...newItem,
-                                                    price: Number(e.target.value),
-                                                })
-                                            }
-                                        />
+                                        <Input value={newItem.price} disabled />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
                                             Cost Price
                                         </label>
-                                        <Input disabled value={newItem.price} />
+                                        <Input value={newItem.costPrice} disabled />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
                                             VAT Percentage
                                         </label>
-                                        <Input
-                                            value={newItem.vatPercent}
-                                            onChange={(e) =>
-                                                setNewItem({
-                                                    ...newItem,
-                                                    vatPercent: Number(e.target.value),
-                                                })
-                                            }
-                                        />
+                                        <Input value={newItem.vatPercent} disabled />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
                                             Category
                                         </label>
-                                        <Input
-                                            value={newItem.category}
-                                            onChange={(e) =>
-                                                setNewItem({ ...newItem, category: e.target.value })
-                                            }
-                                        />
+                                        <Input value={newItem.category} disabled />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
                                             Brand
                                         </label>
-                                        <Input
-                                            value={newItem.brand}
-                                            onChange={(e) =>
-                                                setNewItem({ ...newItem, brand: e.target.value })
-                                            }
-                                        />
+                                        <Input value={newItem.brand} disabled />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
                                             Stock Available
                                         </label>
-                                        <Input
-                                            disabled
-                                            value={newItem.stockAvailable ? 'Yes' : 'No'}
-                                        />
+                                        <Input disabled value={newItem.stock} />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700">
