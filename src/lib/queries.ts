@@ -51,3 +51,35 @@ export const GET_PRODUCTS_QUERY = gql`
         }
     }
 `;
+
+export const GET_ORDERS_QUERY = gql`
+    query GetOrders($limit: Int, $offset: Int, $filters: OrderFilters) {
+        getOrders(limit: $limit, offset: $offset, filters: $filters) {
+            totalCount
+            orders {
+                order_id
+                order_no
+                order_date
+                client_id
+                client_name
+                salesman_id
+                salesman_name
+                line_items_total
+                no_of_line_items
+                vat_amount
+                net_amount
+                delivery_required
+                payment_mode
+                comments
+                created_by
+                created_on
+                modified_by
+                modified_on
+                deleted_by
+                deleted_on
+                __typename
+            }
+            __typename
+        }
+    }
+`;

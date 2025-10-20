@@ -67,3 +67,44 @@ export interface LoginResponse {
         user: User;
     } | null;
 }
+
+export interface LoginVariables {
+    userName: string;
+    password: string;
+    companyId: string;
+}
+
+// ADD THESE AT BOTTOM:
+export interface Order {
+    order_id: string;
+    order_no: string;
+    order_date: string;
+    client_id: string;
+    client_name: string;
+    salesman_id: string;
+    salesman_name: string;
+    line_items_total: number | null;
+    no_of_line_items: number;
+    vat_amount: number | null;
+    net_amount: number | null;
+    delivery_required: string;
+    payment_mode: string;
+    comments: string;
+    created_by: string;
+    created_on: string;
+    modified_by: string | null;
+    modified_on: string | null;
+    deleted_by: string | null;
+    deleted_on: string | null;
+    __typename: string;
+}
+
+export interface OrdersResult {
+    totalCount: number;
+    orders: Order[];
+    __typename: string;
+}
+
+export interface OrdersResponse {
+    getOrders: OrdersResult;
+}

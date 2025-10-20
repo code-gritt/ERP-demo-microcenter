@@ -14,45 +14,14 @@ import {
 import { LOGIN_MUTATION } from '@/lib/mutation';
 import { GET_COMPANIES_QUERY } from '@/lib/queries';
 import { useAuthStore } from '@/lib/store';
+import type { CompaniesResponse, LoginResponse, LoginVariables } from '@/lib/types';
 
-// -------------------- Types --------------------
-interface Company {
-    company_id: string;
-    company_name: string;
-}
-
-interface CompaniesResponse {
-    companies: Company[];
-}
-
-interface LoginResponse {
-    login: {
-        token: string;
-        user: {
-            user_id: string;
-            user_name: string;
-            designation: string;
-            company_name: string;
-            email_id: string;
-            mobile_no: string;
-        };
-    };
-}
-
-interface LoginVariables {
-    userName: string;
-    password: string;
-    companyId: string;
-}
-
-// -------------------- Component --------------------
 export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [company, setCompany] = useState('');
-    const { login } = useAuthStore(); // ✅ Zustand store method
+    const { login } = useAuthStore();
 
-    // Typed Apollo hooks
     const [loginMutation, { loading, error }] = useMutation<LoginResponse, LoginVariables>(
         LOGIN_MUTATION
     );
@@ -69,11 +38,7 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        if (!company) {
-            console.error('Please select a company');
-            return;
-        }
+        if (!company) return;
 
         try {
             const { data } = await loginMutation({
@@ -85,7 +50,7 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
             });
 
             if (data?.login?.token && data.login.user) {
-                login(data.login.token, data.login.user); // ✅ Zustand handles persistence
+                login(data.login.token, data.login.user);
                 window.location.href = '/dashboard';
             }
         } catch (err) {
@@ -100,20 +65,19 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
             </div>
 
             <div className="grid gap-6">
-                {/* Email */}
                 <div className="grid gap-3">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">Username</Label>
                     <Input
                         id="email"
-                        type="email"
+                        type="text"
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         disabled={loading}
+                        placeholder="Enter username"
                     />
                 </div>
 
-                {/* Password */}
                 <div className="grid gap-3">
                     <Label htmlFor="password">Password</Label>
                     <Input
@@ -123,10 +87,10 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         disabled={loading}
+                        placeholder="Enter password"
                     />
                 </div>
 
-                {/* Company */}
                 <div className="grid gap-3">
                     <Label htmlFor="company">Company</Label>
                     <Select
@@ -137,9 +101,7 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
                         <SelectTrigger className="w-full">
                             <SelectValue
                                 placeholder={
-                                    companiesLoading
-                                        ? 'Loading companies...'
-                                        : 'Select your company'
+                                    companiesLoading ? 'Loading companies...' : 'Select company'
                                 }
                             />
                         </SelectTrigger>
@@ -153,22 +115,16 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
                     </Select>
                 </div>
 
-                {/* Error */}
                 {error && (
-                    <p className="text-red-500 text-sm">
-                        {error.message.includes('Invalid credentials')
-                            ? 'Invalid email, password, or company.'
-                            : error.message}
-                    </p>
+                    <p className="text-red-500 text-sm">Invalid username, password, or company.</p>
                 )}
 
-                {/* Submit Button */}
                 <Button
                     type="submit"
                     className="w-full"
-                    disabled={loading || companiesLoading || !company}
+                    disabled={loading || companiesLoading || !company || !email || !password}
                 >
-                    {loading ? 'Logging in...' : 'Login'}
+                    {loading ? 'Signing in...' : 'Sign In'}
                 </Button>
             </div>
         </form>

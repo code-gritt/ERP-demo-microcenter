@@ -17,11 +17,13 @@ interface AuthState {
     logout: () => void;
 }
 
-// ✅ Zustand store with manual persistence
+const saved = localStorage.getItem('auth-storage');
+const initialState = saved
+    ? { ...JSON.parse(saved), isAuthenticated: true }
+    : { token: null, user: null, isAuthenticated: false };
+
 export const useAuthStore = create<AuthState>((set) => ({
-    token: null,
-    user: null,
-    isAuthenticated: false,
+    ...initialState,
     login: (token, user) => {
         const state = { token, user, isAuthenticated: true };
         set(state);
@@ -32,14 +34,3 @@ export const useAuthStore = create<AuthState>((set) => ({
         localStorage.removeItem('auth-storage');
     },
 }));
-
-// ✅ Load persisted state once at startup
-const saved = localStorage.getItem('auth-storage');
-if (saved) {
-    try {
-        const parsed = JSON.parse(saved);
-        useAuthStore.setState(parsed);
-    } catch {
-        localStorage.removeItem('auth-storage');
-    }
-}

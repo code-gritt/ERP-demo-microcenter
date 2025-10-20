@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useQuery } from '@apollo/client/react';
 import { BaseLayout } from '@/components/layouts/base-layout';
-import initialOrdersData from './data.json';
 import { OrdersTable } from './components/data-table';
+import { GET_ORDERS_QUERY } from '@/lib/queries';
+import { GET_CUSTOMERS_QUERY, GET_SALESMEN_QUERY } from '@/lib/queries';
+import type { OrdersResponse, CustomersResponse, SalesmenResponse } from '@/lib/types';
 
-export interface Order {
-    id: number;
+export interface OrderTable {
+    id: string;
     orderNo: string;
     orderDate: string;
     clientId: string;
@@ -14,54 +16,64 @@ export interface Order {
     salesmanId: string;
     salesmanName: string;
     lineItems: number;
-    netAmount: number;
+    netAmount: number | null;
     deliveryRequired: boolean;
     paymentMode: string;
     comments: string;
     createdBy: string;
     createdOn: string;
-    modifiedBy: string;
-    modifiedOn: string;
+    modifiedBy: string | null;
+    modifiedOn: string | null;
 }
 
-export interface OrderFormValues {
-    orderNo: string;
-    orderDate: string;
-    clientId: string;
-    clientName: string;
-    salesmanId: string;
-    salesmanName: string;
-    lineItems: number;
-    netAmount: number;
-    deliveryRequired: boolean;
-    paymentMode: string;
-    comments: string;
-}
+export default function OrdersPage() {
+    const PAGE_SIZE = 40;
 
-export default function ProductsPage() {
-    const [orders, setOrders] = useState<Order[]>(initialOrdersData);
+    const {
+        data: ordersData,
+        loading: ordersLoading,
+        refetch: refetchOrders,
+    } = useQuery<OrdersResponse>(GET_ORDERS_QUERY, {
+        variables: { filters: {}, offset: 0, limit: PAGE_SIZE },
+    });
 
-    const handleAddOrder = (orderData: OrderFormValues) => {
-        const newOrder: Order = {
-            id: Math.max(...orders.map((o) => o.id)) + 1,
-            ...orderData,
-            lineItems: 0,
-            netAmount: 0,
-            createdBy: 'User',
-            createdOn: new Date().toISOString(),
-            modifiedBy: 'User',
-            modifiedOn: new Date().toISOString(),
-        };
-        setOrders((prev) => [newOrder, ...prev]);
-    };
+    const { data: customersData } = useQuery<CustomersResponse>(GET_CUSTOMERS_QUERY);
+    const { data: salesmenData } = useQuery<SalesmenResponse>(GET_SALESMEN_QUERY);
 
-    const handleDeleteOrder = (id: number) => {
-        setOrders((prev) => prev.filter((o) => o.id !== id));
-    };
+    // Transform API data
+    const orders: OrderTable[] =
+        ordersData?.getOrders?.orders?.map((order) => ({
+            id: order.order_id,
+            orderNo: order.order_no,
+            orderDate: new Date(order.order_date).toISOString().split('T')[0],
+            clientId: order.client_id,
+            clientName: order.client_name,
+            salesmanId: order.salesman_id,
+            salesmanName: order.salesman_name,
+            lineItems: order.no_of_line_items,
+            netAmount: order.net_amount,
+            deliveryRequired: order.delivery_required === 'Y',
+            paymentMode: order.payment_mode,
+            comments: order.comments,
+            createdBy: order.created_by,
+            createdOn: order.created_on.split('T')[0],
+            modifiedBy: order.modified_by,
+            modifiedOn: order.modified_on ? order.modified_on.split('T')[0] : null,
+        })) || [];
 
-    const handleEditOrder = (updatedOrder: Order) => {
-        setOrders((prev) => prev.map((o) => (o.id === updatedOrder.id ? updatedOrder : o)));
-    };
+    const totalCount = ordersData?.getOrders?.totalCount || 0;
+    const clients = customersData?.customers || [];
+    const salesmen = salesmenData?.salesmen || [];
+
+    if (ordersLoading) {
+        return (
+            <BaseLayout title="Orders" description="Manage your orders here">
+                <div className="flex justify-center items-center h-64">
+                    <div className="text-lg">Loading orders...</div>
+                </div>
+            </BaseLayout>
+        );
+    }
 
     return (
         <BaseLayout title="Orders" description="Manage your orders here">
@@ -69,9 +81,13 @@ export default function ProductsPage() {
                 <div className="@container/main px-4 lg:px-6 mt-8 lg:mt-12">
                     <OrdersTable
                         orders={orders}
-                        onAddOrder={handleAddOrder}
-                        onEditOrder={handleEditOrder}
-                        onDeleteOrder={handleDeleteOrder}
+                        totalCount={totalCount}
+                        clients={clients}
+                        salesmen={salesmen}
+                        pageSize={PAGE_SIZE}
+                        onPageChange={(offset) => {
+                            refetchOrders({ filters: {}, offset, limit: PAGE_SIZE });
+                        }}
                     />
                 </div>
             </div>

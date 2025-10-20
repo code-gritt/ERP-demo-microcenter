@@ -11,7 +11,9 @@ export const LOGIN_MUTATION = gql`
                 company_name
                 email_id
                 mobile_no
+                __typename
             }
+            __typename
         }
     }
 `;
