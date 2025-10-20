@@ -468,10 +468,6 @@ export default function OrderItemsPage() {
         useSensor(KeyboardSensor, {})
     );
 
-    const { setNodeRef: setDropRef, isOver } = useDroppable({
-        id: 'grouping-zone',
-    });
-
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
         if (over && active.id !== over.id) {
@@ -730,14 +726,6 @@ export default function OrderItemsPage() {
                                     </div>
                                 </DialogContent>
                             </Dialog>
-                        </div>
-                        <div
-                            ref={setDropRef}
-                            className={`p-2 border border-dashed ${
-                                isOver ? 'bg-blue-100' : 'bg-gray-100'
-                            }`}
-                        >
-                            Drag a column header here to group by that column
                         </div>
 
                         <div className="rounded-md border">
