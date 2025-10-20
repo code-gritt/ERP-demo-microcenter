@@ -57,7 +57,6 @@ import { restrictToHorizontalAxis } from '@dnd-kit/modifiers';
 import { arrayMove, SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useDroppable } from '@dnd-kit/core';
 import { BaseLayout } from '@/components/layouts/base-layout';
 
 // Define interfaces

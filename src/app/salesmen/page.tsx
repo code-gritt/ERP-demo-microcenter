@@ -5,6 +5,7 @@ import { BaseLayout } from '@/components/layouts/base-layout';
 import { DataTable } from './components/data-table';
 import { GET_SALESMEN_QUERY } from '@/lib/queries';
 import type { SalesmenResponse } from '@/lib/types';
+import { LoaderSpinner } from '@/components/ui/Loader';
 
 interface SalesmanTable {
     id: string;
@@ -37,9 +38,7 @@ export default function SalesmenPage() {
     if (loading) {
         return (
             <BaseLayout title="Salesmen" description="Manage your salesmen here">
-                <div className="flex justify-center items-center h-64">
-                    <div className="text-lg">Loading salesmen...</div>
-                </div>
+                <LoaderSpinner />
             </BaseLayout>
         );
     }
@@ -58,7 +57,7 @@ export default function SalesmenPage() {
         <BaseLayout title="Salesmen" description="Manage your salesmen here">
             <div className="flex flex-col gap-4">
                 <div className="@container/main px-4 lg:px-6 mt-8 lg:mt-12">
-                    <DataTable users={salesmen} />
+                    <DataTable users={salesmen} loading={loading} />
                 </div>
             </div>
         </BaseLayout>

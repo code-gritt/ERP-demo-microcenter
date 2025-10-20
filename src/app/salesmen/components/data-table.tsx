@@ -179,7 +179,6 @@ export function DataTable({ users, loading = false }: DataTableProps) {
         },
     });
 
-    // ✅ FIXED: Loader overlay full screen, not clipped inside small div
     if (loading) {
         return <LoaderSpinner />;
     }

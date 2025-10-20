@@ -12,47 +12,147 @@ export function LoaderSpinner() {
                 justifyContent: 'center',
             }}
         >
-            <div
-                style={{ position: 'relative', width: '3.75em', aspectRatio: '1' }}
-                className="loader"
-            ></div>
+            <div className="loader">
+                <div className="circle">
+                    <div className="dot"></div>
+                    <div className="outline"></div>
+                </div>
+                <div className="circle">
+                    <div className="dot"></div>
+                    <div className="outline"></div>
+                </div>
+                <div className="circle">
+                    <div className="dot"></div>
+                    <div className="outline"></div>
+                </div>
+                <div className="circle">
+                    <div className="dot"></div>
+                    <div className="outline"></div>
+                </div>
+            </div>
 
             <style>{`
                 .loader {
-                    --color1: #3498db;
-                    --color2: #e74c3c;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    --color: hsl(0, 0%, 87%);
+                    --animation: 2s ease-in-out infinite;
+                }
+
+                .loader .circle {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                     position: relative;
-                    animation: spin 10000ms infinite linear;
+                    width: 20px;
+                    height: 20px;
+                    border: solid 2px var(--color);
+                    border-radius: 50%;
+                    margin: 0 10px;
+                    background-color: transparent;
+                    animation: circle-keys var(--animation);
                 }
 
-                .loader::before,
-                .loader::after {
-                    content: "";
+                .loader .circle .dot {
                     position: absolute;
-                    background: var(--color1);
-                    animation: squeeze 3000ms infinite;
+                    transform: translate(-50%, -50%);
+                    width: 16px;
+                    height: 16px;
+                    border-radius: 50%;
+                    background-color: var(--color);
+                    animation: dot-keys var(--animation);
                 }
 
-                .loader::after {
-                    background: var(--color2);
-                    animation-delay: -1.25s;
-                    border-radius: 50px;
+                .loader .circle .outline {
+                    position: absolute;
+                    transform: translate(-50%, -50%);
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 50%;
+                    animation: outline-keys var(--animation);
                 }
 
-                @keyframes squeeze {
-                    0% { inset: 0 2em 2em 0; }
-                    12.5% { inset: 0 2em 0 0; }
-                    25% { inset: 2em 2em 0 0; }
-                    37.5% { inset: 2em 0 0 0; }
-                    50% { inset: 2em 0 0 2em; }
-                    62.5% { inset: 0 0 0 2em; }
-                    75% { inset: 0 0 2em 2em; }
-                    87.5% { inset: 0 0 2em 0; }
-                    100% { inset: 0 2em 2em 0; }
+                .circle:nth-child(2) {
+                    animation-delay: 0.3s;
                 }
 
-                @keyframes spin {
-                    to { transform: rotate(-360deg); }
+                .circle:nth-child(3) {
+                    animation-delay: 0.6s;
+                }
+
+                .circle:nth-child(4) {
+                    animation-delay: 0.9s;
+                }
+
+                .circle:nth-child(2) .dot {
+                    animation-delay: 0.3s;
+                }
+
+                .circle:nth-child(3) .dot {
+                    animation-delay: 0.6s;
+                }
+
+                .circle:nth-child(4) .dot {
+                    animation-delay: 0.9s;
+                }
+
+                .circle:nth-child(1) .outline {
+                    animation-delay: 0.9s;
+                }
+
+                .circle:nth-child(2) .outline {
+                    animation-delay: 1.2s;
+                }
+
+                .circle:nth-child(3) .outline {
+                    animation-delay: 1.5s;
+                }
+
+                .circle:nth-child(4) .outline {
+                    animation-delay: 1.8s;
+                }
+
+                @keyframes circle-keys {
+                    0% {
+                        transform: scale(1);
+                        opacity: 1;
+                    }
+                    50% {
+                        transform: scale(1.5);
+                        opacity: 0.5;
+                    }
+                    100% {
+                        transform: scale(1);
+                        opacity: 1;
+                    }
+                }
+
+                @keyframes dot-keys {
+                    0% {
+                        transform: scale(1);
+                    }
+                    50% {
+                        transform: scale(0);
+                    }
+                    100% {
+                        transform: scale(1);
+                    }
+                }
+
+                @keyframes outline-keys {
+                    0% {
+                        transform: scale(0);
+                        outline: solid 20px var(--color);
+                        outline-offset: 0;
+                        opacity: 1;
+                    }
+                    100% {
+                        transform: scale(1);
+                        outline: solid 0 transparent;
+                        outline-offset: 20px;
+                        opacity: 0;
+                    }
                 }
             `}</style>
         </div>
