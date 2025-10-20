@@ -81,7 +81,6 @@ export interface Order {
     order_date: string;
     client_id: string;
     client_name: string;
-    salesman_id: string;
     salesman_name: string;
     line_items_total: number | null;
     no_of_line_items: number;

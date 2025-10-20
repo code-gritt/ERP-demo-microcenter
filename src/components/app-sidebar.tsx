@@ -121,7 +121,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     {/* ✅ OPEN */}
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link to="/dashboard">
+                            <Link to="/landing">
                                 <div className="flex items-center space-x-2">
                                     <Logo size={32} />
                                     <span className="font-bold">ERP Demo</span>

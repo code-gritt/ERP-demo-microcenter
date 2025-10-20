@@ -62,8 +62,7 @@ export const GET_ORDERS_QUERY = gql`
                 order_date
                 client_id
                 client_name
-                salesman_id
-                salesman_name
+                salesman_name # ✅ REPLACED salesman_id
                 line_items_total
                 no_of_line_items
                 vat_amount
@@ -83,5 +82,3 @@ export const GET_ORDERS_QUERY = gql`
         }
     }
 `;
-
-

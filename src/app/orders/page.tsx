@@ -3,8 +3,7 @@
 import { useQuery } from '@apollo/client/react';
 import { BaseLayout } from '@/components/layouts/base-layout';
 import { OrdersTable } from './components/data-table';
-import { GET_ORDERS_QUERY } from '@/lib/queries';
-import { GET_CUSTOMERS_QUERY, GET_SALESMEN_QUERY } from '@/lib/queries';
+import { GET_ORDERS_QUERY, GET_CUSTOMERS_QUERY, GET_SALESMEN_QUERY } from '@/lib/queries';
 import type { OrdersResponse, CustomersResponse, SalesmenResponse } from '@/lib/types';
 
 export interface OrderTable {
@@ -13,7 +12,7 @@ export interface OrderTable {
     orderDate: string;
     clientId: string;
     clientName: string;
-    salesmanId: string;
+    salesmanId: string; // KEEP for UI, will map from salesman_name
     salesmanName: string;
     lineItems: number;
     netAmount: number | null;
@@ -40,26 +39,30 @@ export default function OrdersPage() {
     const { data: customersData } = useQuery<CustomersResponse>(GET_CUSTOMERS_QUERY);
     const { data: salesmenData } = useQuery<SalesmenResponse>(GET_SALESMEN_QUERY);
 
-    // Transform API data
+    // Transform API data with salesman mapping
     const orders: OrderTable[] =
-        ordersData?.getOrders?.orders?.map((order) => ({
-            id: order.order_id,
-            orderNo: order.order_no,
-            orderDate: new Date(order.order_date).toISOString().split('T')[0],
-            clientId: order.client_id,
-            clientName: order.client_name,
-            salesmanId: order.salesman_id,
-            salesmanName: order.salesman_name,
-            lineItems: order.no_of_line_items,
-            netAmount: order.net_amount,
-            deliveryRequired: order.delivery_required === 'Y',
-            paymentMode: order.payment_mode,
-            comments: order.comments,
-            createdBy: order.created_by,
-            createdOn: order.created_on.split('T')[0],
-            modifiedBy: order.modified_by,
-            modifiedOn: order.modified_on ? order.modified_on.split('T')[0] : null,
-        })) || [];
+        ordersData?.getOrders?.orders?.map((order) => {
+            // Map salesman_id from salesman_name (approximate mapping)
+            const salesman = salesmenData?.salesmen.find((s) => s.sm_name === order.salesman_name);
+            return {
+                id: order.order_id,
+                orderNo: order.order_no,
+                orderDate: new Date(order.order_date).toISOString().split('T')[0],
+                clientId: order.client_id,
+                clientName: order.client_name,
+                salesmanId: salesman ? salesman.sm_code : '', // Approximate ID
+                salesmanName: order.salesman_name,
+                lineItems: order.no_of_line_items,
+                netAmount: order.net_amount,
+                deliveryRequired: order.delivery_required === 'Y',
+                paymentMode: order.payment_mode,
+                comments: order.comments,
+                createdBy: order.created_by,
+                createdOn: order.created_on.split('T')[0],
+                modifiedBy: order.modified_by,
+                modifiedOn: order.modified_on ? order.modified_on.split('T')[0] : null,
+            };
+        }) || [];
 
     const totalCount = ordersData?.getOrders?.totalCount || 0;
     const clients = customersData?.customers || [];
