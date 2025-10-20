@@ -93,11 +93,7 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
 
                 <div className="grid gap-3">
                     <Label htmlFor="company">Company</Label>
-                    <Select
-                        value={company}
-                        onValueChange={setCompany}
-                        disabled={loading || companiesLoading || companies.length === 0}
-                    >
+                    <Select value={company} onValueChange={setCompany}>
                         <SelectTrigger className="w-full">
                             <SelectValue
                                 placeholder={
