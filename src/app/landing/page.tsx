@@ -18,6 +18,7 @@ import {
     LandingThemeCustomizerTrigger,
 } from './components/landing-theme-customizer';
 import { AboutSection } from './components/about-section';
+import { Bubble } from '@/components/bubble';
 
 export default function LandingPage() {
     const [themeCustomizerOpen, setThemeCustomizerOpen] = React.useState(false);
@@ -51,6 +52,7 @@ export default function LandingPage() {
                 open={themeCustomizerOpen}
                 onOpenChange={setThemeCustomizerOpen}
             />
+            <Bubble />
         </div>
     );
 }
