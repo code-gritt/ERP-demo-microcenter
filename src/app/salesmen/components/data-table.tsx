@@ -18,7 +18,7 @@ import { Search, Filter } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+
 import {
     Select,
     SelectContent,
@@ -40,6 +40,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+import { LoaderSpinner } from '@/components/ui/Loader';
+
 interface User {
     id: string;
     name: string;
@@ -50,16 +52,16 @@ interface User {
 
 interface DataTableProps {
     users: User[];
+    loading?: boolean;
 }
 
-export function DataTable({ users }: DataTableProps) {
+export function DataTable({ users, loading = false }: DataTableProps) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
     const [rowSelection, setRowSelection] = useState({});
     const [globalFilter, setGlobalFilter] = useState('');
 
-    // Extract unique IDs and names for filter options
     const uniqueIds = [...new Set(users.map((user) => user.sm_code))].sort();
     const uniqueNames = [...new Set(users.map((user) => user.name))].sort();
 
@@ -181,6 +183,14 @@ export function DataTable({ users }: DataTableProps) {
         },
     });
 
+    if (loading) {
+        return (
+            <div className="flex h-64 items-center justify-center">
+                <LoaderSpinner size="w-16 h-16" />
+            </div>
+        );
+    }
+
     return (
         <div className="w-full space-y-4">
             {/* Search */}
@@ -256,56 +266,6 @@ export function DataTable({ users }: DataTableProps) {
                         )}
                     </TableBody>
                 </Table>
-            </div>
-
-            {/* Pagination */}
-            <div className="flex items-center justify-between space-x-2 py-4">
-                <div className="flex items-center space-x-2">
-                    <Label htmlFor="page-size" className="text-sm font-medium">
-                        Show
-                    </Label>
-                    <Select
-                        value={`${table.getState().pagination.pageSize}`}
-                        onValueChange={(value) => table.setPageSize(Number(value))}
-                    >
-                        <SelectTrigger className="w-20" id="page-size">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent side="top">
-                            {[10, 20, 30, 40, 50].map((pageSize) => (
-                                <SelectItem key={pageSize} value={`${pageSize}`}>
-                                    {pageSize}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="flex items-center space-x-6 lg:space-x-8">
-                    <div className="flex items-center space-x-2 hidden sm:flex">
-                        <p className="text-sm font-medium">Page</p>
-                        <strong className="text-sm">
-                            {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-                        </strong>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => table.previousPage()}
-                            disabled={!table.getCanPreviousPage()}
-                        >
-                            Previous
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => table.nextPage()}
-                            disabled={!table.getCanNextPage()}
-                        >
-                            Next
-                        </Button>
-                    </div>
-                </div>
             </div>
         </div>
     );
