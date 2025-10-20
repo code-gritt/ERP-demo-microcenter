@@ -2,16 +2,7 @@
 
 import * as React from 'react';
 import { useAuthStore } from '@/lib/store';
-import {
-    LayoutPanelLeft,
-    Mail,
-    CheckSquare,
-    MessageCircle,
-    Settings,
-    HelpCircle,
-    CreditCard,
-    Users,
-} from 'lucide-react';
+import { LayoutPanelLeft, Mail, CheckSquare, MessageCircle, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Logo } from '@/components/logo';
 
@@ -62,52 +53,52 @@ const navGroups = [
             },
         ],
     },
-    {
-        label: 'Pages',
-        items: [
-            {
-                title: 'Settings',
-                url: '#',
-                icon: Settings,
-                items: [
-                    {
-                        title: 'User Settings',
-                        url: '/settings/user',
-                    },
-                    {
-                        title: 'Account Settings',
-                        url: '/settings/account',
-                    },
-                    {
-                        title: 'Plans & Billing',
-                        url: '/settings/billing',
-                    },
-                    {
-                        title: 'Appearance',
-                        url: '/settings/appearance',
-                    },
-                    {
-                        title: 'Notifications',
-                        url: '/settings/notifications',
-                    },
-                    {
-                        title: 'Connections',
-                        url: '/settings/connections',
-                    },
-                ],
-            },
-            {
-                title: 'FAQs',
-                url: '/faqs',
-                icon: HelpCircle,
-            },
-            {
-                title: 'Pricing',
-                url: '/pricing',
-                icon: CreditCard,
-            },
-        ],
-    },
+    // {
+    //     label: 'Pages',
+    //     items: [
+    //         {
+    //             title: 'Settings',
+    //             url: '#',
+    //             icon: Settings,
+    //             items: [
+    //                 {
+    //                     title: 'User Settings',
+    //                     url: '/settings/user',
+    //                 },
+    //                 {
+    //                     title: 'Account Settings',
+    //                     url: '/settings/account',
+    //                 },
+    //                 {
+    //                     title: 'Plans & Billing',
+    //                     url: '/settings/billing',
+    //                 },
+    //                 {
+    //                     title: 'Appearance',
+    //                     url: '/settings/appearance',
+    //                 },
+    //                 {
+    //                     title: 'Notifications',
+    //                     url: '/settings/notifications',
+    //                 },
+    //                 {
+    //                     title: 'Connections',
+    //                     url: '/settings/connections',
+    //                 },
+    //             ],
+    //         },
+    //         {
+    //             title: 'FAQs',
+    //             url: '/faqs',
+    //             icon: HelpCircle,
+    //         },
+    //         {
+    //             title: 'Pricing',
+    //             url: '/pricing',
+    //             icon: CreditCard,
+    //         },
+    //     ],
+    // },
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
