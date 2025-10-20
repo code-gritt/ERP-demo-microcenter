@@ -58,6 +58,7 @@ import { arrayMove, SortableContext, horizontalListSortingStrategy } from '@dnd-
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useDroppable } from '@dnd-kit/core';
+import { BaseLayout } from '@/components/layouts/base-layout';
 
 // Define interfaces
 export interface Company {
@@ -558,250 +559,247 @@ export default function OrderItemsPage() {
     const totalAmount = items.reduce((sum, item) => sum + item.netAmount, 0);
 
     return (
-        <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            modifiers={[restrictToHorizontalAxis]}
-            onDragEnd={handleDragEnd}
-        >
-            <div className="p-4">
-                <div className="flex justify-between items-center mb-4">
-                    <h1 className="text-xl font-bold">KEWALRAM AND SONS WLL</h1>
-                    <div>
-                        <select className="p-2 border rounded">
-                            <option>Head Office</option>
-                        </select>
-                        <Button variant="outline" className="ml-2">
-                            Support
-                        </Button>
-                    </div>
-                </div>
-                <div className="mb-4">
-                    <Button variant="outline" onClick={() => window.history.back()}>
-                        Back Page
-                    </Button>
-                    <span className="ml-2">
-                        Client Name: SHANGHAI HUA SHEN IMPORT AND EXPORT CO. LTD. | Order No: SS009
-                    </span>
-                </div>
-                <div className="flex justify-between mb-4">
-                    <Button
-                        className="bg-green-600 text-white"
-                        onClick={() => {
-                            /* Download logic */
-                        }}
-                    >
-                        <Download className="mr-2 h-4 w-4" /> Download Invoice
-                    </Button>
-                    <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-                        <DialogTrigger asChild>
-                            <Button className="bg-purple-600 text-white">
-                                <Plus className="mr-2 h-4 w-4" /> Add Item
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Add New Item</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Select Product *
-                                    </label>
-                                    <Select
-                                        onValueChange={(value) => {
-                                            const prod = products.find(
-                                                (p) => p.product_name === value
-                                            );
-                                            if (prod) {
-                                                setNewItem({
-                                                    ...newItem,
-                                                    itemNo: prod.prod_code,
-                                                    productName: prod.product_name,
-                                                    packing: '', // Packing not available in response
-                                                    price: prod.unit_price,
-                                                    quantity: newItem.quantity,
-                                                    vatPercent: 0, // VAT not available in response
-                                                    category: '',
-                                                    brand: '',
-                                                    costPrice: 0,
-                                                    stock: prod.stock_available,
-                                                });
-                                            }
-                                        }}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select product" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {products.map((prod) => (
-                                                <SelectItem
-                                                    key={prod.prod_code}
-                                                    value={prod.product_name}
-                                                >
-                                                    {prod.product_name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Product ID
-                                        </label>
-                                        <Input value={newItem.itemNo} disabled />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Packing
-                                        </label>
-                                        <Input value={newItem.packing} disabled />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Unit Price
-                                        </label>
-                                        <Input value={newItem.price} disabled />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Cost Price
-                                        </label>
-                                        <Input value={newItem.costPrice} disabled />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            VAT Percentage
-                                        </label>
-                                        <Input value={newItem.vatPercent} disabled />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Category
-                                        </label>
-                                        <Input value={newItem.category} disabled />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Brand
-                                        </label>
-                                        <Input value={newItem.brand} disabled />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Stock Available
-                                        </label>
-                                        <Input disabled value={newItem.stock} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Quantity *
-                                        </label>
-                                        <Input
-                                            value={newItem.quantity}
-                                            onChange={(e) =>
-                                                setNewItem({
-                                                    ...newItem,
-                                                    quantity: Number(e.target.value),
-                                                })
-                                            }
-                                        />
-                                    </div>
-                                </div>
-                                <DialogFooter>
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => setAddDialogOpen(false)}
-                                    >
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        className="bg-purple-600 text-white"
-                                        onClick={handleAddSave}
-                                    >
-                                        Submit
-                                    </Button>
-                                </DialogFooter>
-                            </div>
-                        </DialogContent>
-                    </Dialog>
-                </div>
-                <div
-                    ref={setDropRef}
-                    className={`p-2 border border-dashed ${isOver ? 'bg-blue-100' : 'bg-gray-100'}`}
+        <BaseLayout title="Orders" description="Manage your orders here">
+            <div className="flex flex-col gap-4">
+                <div className="@container/main px-4 lg:px-6 mt-8 lg:mt-12"></div>
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    modifiers={[restrictToHorizontalAxis]}
+                    onDragEnd={handleDragEnd}
                 >
-                    Drag a column header here to group by that column
-                </div>
-                <div className="flex justify-end mb-4">
-                    <Button className="bg-green-600 text-white" onClick={handleExport}>
-                        <Download className="mr-2 h-4 w-4" /> Export to Excel
-                    </Button>
-                    <div className="relative flex-1 max-w-sm ml-2">
-                        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                            placeholder="Search..."
-                            value={globalFilter ?? ''}
-                            onChange={(event) => setGlobalFilter(String(event.target.value))}
-                            className="pl-9"
-                        />
+                    <div className="p-4">
+                        <div className="mb-4 justify-start flex gap-4">
+                            <Button variant="outline" onClick={() => window.history.back()}>
+                                Back Page
+                            </Button>
+                            <div className="relative flex-1 max-w-sm ml-2">
+                                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search..."
+                                    value={globalFilter ?? ''}
+                                    onChange={(event) =>
+                                        setGlobalFilter(String(event.target.value))
+                                    }
+                                    className="pl-9"
+                                />
+                            </div>
+                        </div>
+                        <div className="flex justify-end gap-4 mb-4">
+                            <Button className="bg-green-600 text-white" onClick={handleExport}>
+                                <Download className="mr-2 h-4 w-4" /> Export to Excel
+                            </Button>
+                            <Button
+                                className="bg-green-600 text-white"
+                                onClick={() => {
+                                    /* Download logic */
+                                }}
+                            >
+                                <Download className="mr-2 h-4 w-4" /> Download Invoice
+                            </Button>
+                            <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+                                <DialogTrigger asChild>
+                                    <Button className="bg-purple-600 text-white">
+                                        <Plus className="mr-2 h-4 w-4" /> Add Item
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Add New Item</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Select Product *
+                                            </label>
+                                            <Select
+                                                onValueChange={(value) => {
+                                                    const prod = products.find(
+                                                        (p) => p.product_name === value
+                                                    );
+                                                    if (prod) {
+                                                        setNewItem({
+                                                            ...newItem,
+                                                            itemNo: prod.prod_code,
+                                                            productName: prod.product_name,
+                                                            packing: '', // Packing not available in response
+                                                            price: prod.unit_price,
+                                                            quantity: newItem.quantity,
+                                                            vatPercent: 0, // VAT not available in response
+                                                            category: '',
+                                                            brand: '',
+                                                            costPrice: 0,
+                                                            stock: prod.stock_available,
+                                                        });
+                                                    }
+                                                }}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select product" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {products.map((prod) => (
+                                                        <SelectItem
+                                                            key={prod.prod_code}
+                                                            value={prod.product_name}
+                                                        >
+                                                            {prod.product_name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">
+                                                    Product ID
+                                                </label>
+                                                <Input value={newItem.itemNo} disabled />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">
+                                                    Packing
+                                                </label>
+                                                <Input value={newItem.packing} disabled />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">
+                                                    Unit Price
+                                                </label>
+                                                <Input value={newItem.price} disabled />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">
+                                                    Cost Price
+                                                </label>
+                                                <Input value={newItem.costPrice} disabled />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">
+                                                    VAT Percentage
+                                                </label>
+                                                <Input value={newItem.vatPercent} disabled />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">
+                                                    Category
+                                                </label>
+                                                <Input value={newItem.category} disabled />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">
+                                                    Brand
+                                                </label>
+                                                <Input value={newItem.brand} disabled />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">
+                                                    Stock Available
+                                                </label>
+                                                <Input disabled value={newItem.stock} />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">
+                                                    Quantity *
+                                                </label>
+                                                <Input
+                                                    value={newItem.quantity}
+                                                    onChange={(e) =>
+                                                        setNewItem({
+                                                            ...newItem,
+                                                            quantity: Number(e.target.value),
+                                                        })
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
+                                        <DialogFooter>
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => setAddDialogOpen(false)}
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                className="bg-purple-600 text-white"
+                                                onClick={handleAddSave}
+                                            >
+                                                Submit
+                                            </Button>
+                                        </DialogFooter>
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
+                        </div>
+                        <div
+                            ref={setDropRef}
+                            className={`p-2 border border-dashed ${
+                                isOver ? 'bg-blue-100' : 'bg-gray-100'
+                            }`}
+                        >
+                            Drag a column header here to group by that column
+                        </div>
+
+                        <div className="rounded-md border">
+                            <Table>
+                                <TableHeader>
+                                    {table.getHeaderGroups().map((headerGroup) => (
+                                        <TableRow key={headerGroup.id}>
+                                            <SortableContext
+                                                items={
+                                                    columnOrder.length > 0
+                                                        ? columnOrder
+                                                        : columns.map((col) => col.id || '')
+                                                }
+                                                strategy={horizontalListSortingStrategy}
+                                            >
+                                                {headerGroup.headers.map((header) => (
+                                                    <DraggableTableHeader
+                                                        key={header.id}
+                                                        header={header}
+                                                    />
+                                                ))}
+                                            </SortableContext>
+                                        </TableRow>
+                                    ))}
+                                </TableHeader>
+                                <TableBody>
+                                    {table.getRowModel().rows?.length ? (
+                                        table.getRowModel().rows.map((row) => (
+                                            <TableRow key={row.id}>
+                                                <SortableContext
+                                                    items={
+                                                        columnOrder.length > 0
+                                                            ? columnOrder
+                                                            : columns.map((col) => col.id || '')
+                                                    }
+                                                    strategy={horizontalListSortingStrategy}
+                                                >
+                                                    {row.getVisibleCells().map((cell) => (
+                                                        <DragAlongCell key={cell.id} cell={cell} />
+                                                    ))}
+                                                </SortableContext>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={columns.length}
+                                                className="h-24 text-center"
+                                            >
+                                                No results.
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                        <div className="mt-4 text-right">
+                            <strong>Total: {totalAmount.toLocaleString()} </strong>
+                        </div>
                     </div>
-                </div>
-                <div className="rounded-md border">
-                    <Table>
-                        <TableHeader>
-                            {table.getHeaderGroups().map((headerGroup) => (
-                                <TableRow key={headerGroup.id}>
-                                    <SortableContext
-                                        items={
-                                            columnOrder.length > 0
-                                                ? columnOrder
-                                                : columns.map((col) => col.id || '')
-                                        }
-                                        strategy={horizontalListSortingStrategy}
-                                    >
-                                        {headerGroup.headers.map((header) => (
-                                            <DraggableTableHeader key={header.id} header={header} />
-                                        ))}
-                                    </SortableContext>
-                                </TableRow>
-                            ))}
-                        </TableHeader>
-                        <TableBody>
-                            {table.getRowModel().rows?.length ? (
-                                table.getRowModel().rows.map((row) => (
-                                    <TableRow key={row.id}>
-                                        <SortableContext
-                                            items={
-                                                columnOrder.length > 0
-                                                    ? columnOrder
-                                                    : columns.map((col) => col.id || '')
-                                            }
-                                            strategy={horizontalListSortingStrategy}
-                                        >
-                                            {row.getVisibleCells().map((cell) => (
-                                                <DragAlongCell key={cell.id} cell={cell} />
-                                            ))}
-                                        </SortableContext>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={columns.length}
-                                        className="h-24 text-center"
-                                    >
-                                        No results.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
-                <div className="mt-4 text-right">
-                    <strong>Total: {totalAmount.toLocaleString()} </strong>
-                </div>
+                </DndContext>
             </div>
-        </DndContext>
+        </BaseLayout>
     );
 }
