@@ -51,7 +51,7 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
 
             if (data?.login?.token && data.login.user) {
                 login(data.login.token, data.login.user);
-                window.location.href = '/dashboard';
+                window.location.href = '/landing';
             }
         } catch (err) {
             console.error('Login error:', err);
