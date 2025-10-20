@@ -17,16 +17,6 @@ interface SalesmanTable {
 export default function SalesmenPage() {
     const { data, loading, error } = useQuery<SalesmenResponse>(GET_SALESMEN_QUERY);
 
-    // Transform API data to table format
-    const salesmen: SalesmanTable[] =
-        data?.salesmen?.map((salesman) => ({
-            id: salesman.sm_code,
-            name: salesman.sm_name,
-            sm_code: salesman.sm_code,
-            avatar: generateAvatar(salesman.sm_name),
-            email: `${salesman.sm_name.toLowerCase().replace(' ', '.')}@company.com`, // Fake email
-        })) || [];
-
     const generateAvatar = (name: string) => {
         const names = name.split(' ');
         if (names.length >= 2) {
@@ -34,6 +24,15 @@ export default function SalesmenPage() {
         }
         return name.substring(0, 2).toUpperCase();
     };
+
+    const salesmen: SalesmanTable[] =
+        data?.salesmen?.map((salesman) => ({
+            id: salesman.sm_code,
+            name: salesman.sm_name,
+            sm_code: salesman.sm_code,
+            avatar: generateAvatar(salesman.sm_name),
+            email: `${salesman.sm_name.toLowerCase().replace(' ', '.')}@company.com`,
+        })) || [];
 
     if (loading) {
         return (

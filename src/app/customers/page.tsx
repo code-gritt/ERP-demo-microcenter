@@ -17,7 +17,15 @@ interface CustomerTable {
 export default function CustomersPage() {
     const { data, loading, error } = useQuery<CustomersResponse>(GET_CUSTOMERS_QUERY);
 
-    // Transform API data to table format
+    // Function must come first
+    const generateAvatar = (name: string) => {
+        const names = name.split(' ');
+        if (names.length >= 2) {
+            return `${names[0][0]}${names[1][0]}`.toUpperCase();
+        }
+        return name.substring(0, 2).toUpperCase();
+    };
+
     const customers: CustomerTable[] =
         data?.customers?.map((customer) => ({
             id: customer.cu_code,
@@ -26,14 +34,6 @@ export default function CustomersPage() {
             email: customer.email_id,
             avatar: generateAvatar(customer.cu_name),
         })) || [];
-
-    const generateAvatar = (name: string) => {
-        const names = name.split(' ');
-        if (names.length >= 2) {
-            return `${names[0][0]}${names[1][0]}`.toUpperCase();
-        }
-        return name.substring(0, 2).toUpperCase();
-    };
 
     if (loading) {
         return (
