@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useQuery } from '@apollo/client/react';
 import { BaseLayout } from '@/components/layouts/base-layout';
-import initialProductsData from './data.json';
 import { ProductsTable } from './components/data-table';
+import { GET_PRODUCTS_QUERY } from '@/lib/queries';
+import type { ProductsResponse } from '@/lib/types';
 
-export interface Product {
-    id: number;
+export interface ProductTable {
+    id: string;
     code: string;
     name: string;
     category: string;
@@ -14,36 +15,56 @@ export interface Product {
     unitPrice: number;
     costPrice: number;
     stocksAvailable: number;
-}
-
-export interface ProductFormValues {
-    code: string;
-    name: string;
-    category: string;
-    brand: string;
-    unitPrice: number;
-    costPrice: number;
-    stocksAvailable: number;
+    packing: string;
+    vatPerc: number;
 }
 
 export default function ProductsPage() {
-    const [products, setProducts] = useState<Product[]>(initialProductsData);
+    const PAGE_SIZE = 10;
+    const { data, loading, error, refetch } = useQuery<ProductsResponse>(GET_PRODUCTS_QUERY, {
+        variables: {
+            limit: PAGE_SIZE,
+            offset: 0,
+            filters: { filters: [] },
+        },
+    });
 
-    const handleAddProduct = (productData: ProductFormValues) => {
-        const newProduct: Product = {
-            id: Math.max(...products.map((p) => p.id)) + 1,
-            ...productData,
-        };
-        setProducts((prev) => [newProduct, ...prev]);
-    };
+    // Transform API data to table format
+    const products: ProductTable[] =
+        data?.getProducts?.products?.map((product) => ({
+            id: product.prod_code,
+            code: product.prod_code,
+            name: product.product_name,
+            category: product.prod_cat,
+            brand: product.brand,
+            unitPrice: product.unit_price,
+            costPrice: product.cost_price,
+            stocksAvailable: product.stock_available,
+            packing: product.packing,
+            vatPerc: product.vat_perc,
+        })) || [];
 
-    const handleDeleteProduct = (id: number) => {
-        setProducts((prev) => prev.filter((p) => p.id !== id));
-    };
+    const totalCount = data?.getProducts?.totalCount || 0;
 
-    const handleEditProduct = (product: Product) => {
-        console.log('Edit product:', product);
-    };
+    if (loading) {
+        return (
+            <BaseLayout title="Products" description="Manage your products here">
+                <div className="flex justify-center items-center h-64">
+                    <div className="text-lg">Loading products...</div>
+                </div>
+            </BaseLayout>
+        );
+    }
+
+    if (error) {
+        return (
+            <BaseLayout title="Products" description="Manage your products here">
+                <div className="flex justify-center items-center h-64">
+                    <div className="text-red-500">Error loading products: {error.message}</div>
+                </div>
+            </BaseLayout>
+        );
+    }
 
     return (
         <BaseLayout title="Products" description="Manage your products here">
@@ -51,9 +72,15 @@ export default function ProductsPage() {
                 <div className="@container/main px-4 lg:px-6 mt-8 lg:mt-12">
                     <ProductsTable
                         products={products}
-                        onAddProduct={handleAddProduct}
-                        onEditProduct={handleEditProduct}
-                        onDeleteProduct={handleDeleteProduct}
+                        totalCount={totalCount}
+                        pageSize={PAGE_SIZE}
+                        onPageChange={(offset) => {
+                            refetch({
+                                limit: PAGE_SIZE,
+                                offset,
+                                filters: { filters: [] },
+                            });
+                        }}
                     />
                 </div>
             </div>

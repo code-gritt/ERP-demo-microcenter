@@ -26,6 +26,29 @@ export interface Customer {
     __typename: string;
 }
 
+export interface Product {
+    prod_code: string;
+    product_name: string;
+    brand: string;
+    prod_cat: string;
+    packing: string;
+    unit_price: number;
+    cost_price: number;
+    vat_perc: number;
+    stock_available: number;
+    __typename: string;
+}
+
+export interface ProductsResult {
+    products: Product[];
+    totalCount: number;
+    __typename: string;
+}
+
+export interface ProductsResponse {
+    getProducts: ProductsResult;
+}
+
 export interface CustomersResponse {
     customers: Customer[];
 }
