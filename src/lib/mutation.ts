@@ -17,3 +17,35 @@ export const LOGIN_MUTATION = gql`
         }
     }
 `;
+
+export const ADD_ORDER_MUTATION = gql`
+    mutation AddOrder(
+        $clientId: String!
+        $salesmanId: String!
+        $orderDate: Date
+        $deliveryRequired: String
+        $paymentMode: String
+        $comments: String
+    ) {
+        addOrder(
+            clientId: $clientId
+            salesmanId: $salesmanId
+            orderDate: $orderDate
+            deliveryRequired: $deliveryRequired
+            paymentMode: $paymentMode
+            comments: $comments
+        ) {
+            status
+            message
+            orders {
+                order_no
+                order_date
+                payment_mode
+                created_by
+                created_on
+                __typename
+            }
+            __typename
+        }
+    }
+`;

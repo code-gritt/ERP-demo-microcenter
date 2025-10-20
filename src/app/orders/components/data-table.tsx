@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useMutation } from '@apollo/client/react';
 import {
     type ColumnDef,
     type ColumnFiltersState,
@@ -13,6 +14,7 @@ import {
     useReactTable,
 } from '@tanstack/react-table';
 import { Search, RefreshCw, FileText, Plus, Edit, Trash } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,6 +43,8 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import * as XLSX from 'xlsx';
+import { ADD_ORDER_MUTATION } from '@/lib/mutation';
+import type { AddOrderResponse, AddOrderVariables } from '@/lib/types';
 
 export interface OrderTable {
     id: string;
@@ -79,6 +83,7 @@ interface OrdersTableProps {
     pageSize: number;
     clients: Client[];
     salesmen: Salesman[];
+    refetchOrders: () => void; // ✅ ADD THIS
     onPageChange: (offset: number) => void;
 }
 
@@ -90,21 +95,22 @@ export function OrdersTable({
     pageSize,
     clients,
     salesmen,
+    refetchOrders,
     onPageChange,
 }: OrdersTableProps) {
+    // ✅ ADD ORDER MUTATION
+    const [addOrderMutation] = useMutation<AddOrderResponse, AddOrderVariables>(ADD_ORDER_MUTATION);
+
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [globalFilter, setGlobalFilter] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
-    const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [addDialogOpen, setAddDialogOpen] = useState(false);
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [selectedOrder, setSelectedOrder] = useState<OrderTable | null>(null);
     const [newOrder, setNewOrder] = useState<OrderTable>({
         id: '',
         orderNo: '',
-        orderDate: '',
+        orderDate: new Date().toISOString().split('T')[0], // ✅ TODAY
         clientId: '',
         clientName: '',
         salesmanId: '',
@@ -112,7 +118,7 @@ export function OrdersTable({
         lineItems: 0,
         netAmount: null,
         deliveryRequired: true,
-        paymentMode: '',
+        paymentMode: 'Credit',
         comments: '',
         createdBy: '',
         createdOn: '',
@@ -195,11 +201,59 @@ export function OrdersTable({
     const currentPage = table.getState().pagination.pageIndex;
     const totalPages = table.getPageCount();
 
+    // ✅ ADD ORDER FUNCTION
+    const handleAddSave = async () => {
+        if (!newOrder.clientId || !newOrder.salesmanId || !newOrder.paymentMode) {
+            toast.error('Please fill all required fields');
+            return;
+        }
+
+        try {
+            const variables: AddOrderVariables = {
+                clientId: newOrder.clientId,
+                salesmanId: newOrder.salesmanId,
+                orderDate: newOrder.orderDate,
+                deliveryRequired: newOrder.deliveryRequired ? 'Y' : 'N',
+                paymentMode: newOrder.paymentMode,
+                comments: newOrder.comments || '',
+            };
+
+            console.log('🚀 ADDING ORDER:', variables);
+
+            const { data } = await addOrderMutation({ variables });
+
+            console.log('✅ ADD ORDER RESPONSE:', data);
+
+            if (data?.addOrder?.status === 'success') {
+                toast.success(`Order ${data.addOrder.orders.order_no} created!`);
+                setAddDialogOpen(false);
+                refetchOrders(); // ✅ REFRESH TABLE
+                // Reset form
+                setNewOrder({
+                    ...newOrder,
+                    orderDate: new Date().toISOString().split('T')[0],
+                    clientId: '',
+                    clientName: '',
+                    salesmanId: '',
+                    salesmanName: '',
+                    paymentMode: 'Credit',
+                    comments: '',
+                });
+            } else {
+                toast.error(data?.addOrder?.message || 'Failed to add order');
+            }
+        } catch (error: any) {
+            console.error('💥 ADD ORDER ERROR:', error);
+            toast.error(error.message || 'Failed to add order');
+        }
+    };
+
     const handleRefresh = () => {
         setGlobalFilter('');
         setColumnFilters([]);
         setStartDate('');
         setEndDate('');
+        refetchOrders();
     };
 
     const handleExport = () => {
@@ -207,43 +261,6 @@ export function OrdersTable({
         const ws = XLSX.utils.json_to_sheet(filteredOrders);
         XLSX.utils.book_append_sheet(wb, ws, 'Orders');
         XLSX.writeFile(wb, 'orders.xlsx');
-    };
-
-    const handleAddSave = () => {
-        console.log('Add Order:', newOrder); // TODO: API mutation
-        setAddDialogOpen(false);
-        setNewOrder({
-            id: '',
-            orderNo: '',
-            orderDate: '',
-            clientId: '',
-            clientName: '',
-            salesmanId: '',
-            salesmanName: '',
-            lineItems: 0,
-            netAmount: null,
-            deliveryRequired: true,
-            paymentMode: '',
-            comments: '',
-            createdBy: '',
-            createdOn: '',
-            modifiedBy: null,
-            modifiedOn: null,
-        });
-    };
-
-    const handleEditSave = () => {
-        if (selectedOrder) {
-            console.log('Edit Order:', selectedOrder); // TODO: API mutation
-            setEditDialogOpen(false);
-        }
-    };
-
-    const handleDeleteConfirm = () => {
-        if (selectedOrder) {
-            console.log('Delete Order:', selectedOrder.id); // TODO: API mutation
-            setDeleteDialogOpen(false);
-        }
     };
 
     return (
@@ -286,7 +303,7 @@ export function OrdersTable({
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium mb-1">
-                                            Client
+                                            Client *
                                         </label>
                                         <Select
                                             value={newOrder.clientId}
@@ -318,7 +335,7 @@ export function OrdersTable({
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium mb-1">
-                                            Salesman
+                                            Salesman *
                                         </label>
                                         <Select
                                             value={newOrder.salesmanId}
@@ -350,7 +367,7 @@ export function OrdersTable({
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium mb-1">
-                                            Payment Mode
+                                            Payment Mode *
                                         </label>
                                         <Select
                                             value={newOrder.paymentMode}
@@ -372,7 +389,7 @@ export function OrdersTable({
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium mb-1">
-                                            Delivery
+                                            Delivery *
                                         </label>
                                         <Select
                                             value={newOrder.deliveryRequired ? 'Yes' : 'No'}
@@ -424,7 +441,7 @@ export function OrdersTable({
                                     >
                                         Cancel
                                     </Button>
-                                    <Button onClick={handleAddSave}>Save Order</Button>
+                                    <Button onClick={handleAddSave}>Create Order</Button>
                                 </DialogFooter>
                             </div>
                         </DialogContent>
@@ -471,6 +488,7 @@ export function OrdersTable({
                                         )}
                                     </TableHead>
                                 ))}
+                                <TableHead>Actions</TableHead>
                             </TableRow>
                         ))}
                     </TableHeader>
@@ -488,24 +506,10 @@ export function OrdersTable({
                                     ))}
                                     <TableCell>
                                         <div className="flex space-x-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => {
-                                                    setSelectedOrder(row.original);
-                                                    setEditDialogOpen(true);
-                                                }}
-                                            >
+                                            <Button variant="ghost" size="icon">
                                                 <Edit className="h-4 w-4" />
                                             </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => {
-                                                    setSelectedOrder(row.original);
-                                                    setDeleteDialogOpen(true);
-                                                }}
-                                            >
+                                            <Button variant="ghost" size="icon">
                                                 <Trash className="h-4 w-4" />
                                             </Button>
                                         </div>
@@ -557,41 +561,6 @@ export function OrdersTable({
                     </Button>
                 </div>
             </div>
-
-            {/* Dialogs */}
-            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Edit Order</DialogTitle>
-                    </DialogHeader>
-                    {/* Similar to add dialog but populated */}
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
-                            Cancel
-                        </Button>
-                        <Button onClick={handleEditSave}>Save Changes</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Confirm Delete</DialogTitle>
-                    </DialogHeader>
-                    <div className="text-center">
-                        <p className="text-red-600 mb-4">Delete Order {selectedOrder?.orderNo}?</p>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-                                Cancel
-                            </Button>
-                            <Button variant="destructive" onClick={handleDeleteConfirm}>
-                                Delete
-                            </Button>
-                        </DialogFooter>
-                    </div>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }

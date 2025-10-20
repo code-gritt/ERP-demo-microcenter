@@ -85,6 +85,7 @@ export default function OrdersPage() {
                         clients={clients}
                         salesmen={salesmen}
                         pageSize={PAGE_SIZE}
+                        refetchOrders={refetchOrders}
                         onPageChange={(offset) => {
                             refetchOrders({ filters: {}, offset, limit: PAGE_SIZE });
                         }}

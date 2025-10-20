@@ -108,3 +108,28 @@ export interface OrdersResult {
 export interface OrdersResponse {
     getOrders: OrdersResult;
 }
+
+export interface AddOrderResponse {
+    addOrder: {
+        status: string;
+        message: string;
+        orders: {
+            order_no: string;
+            order_date: string;
+            payment_mode: string;
+            created_by: string;
+            created_on: string;
+            __typename: string;
+        };
+        __typename: string;
+    };
+}
+
+export interface AddOrderVariables {
+    clientId: string;
+    salesmanId: string;
+    orderDate?: string;
+    deliveryRequired?: string;
+    paymentMode?: string;
+    comments?: string;
+}
