@@ -1,10 +1,9 @@
 'use client';
 
 import { CreditCard, EllipsisVertical, LogOut, BellDot, CircleUser } from 'lucide-react';
-import { useAuthStore } from '@/lib/store'; // ✅ LIVE USER
+import { useAuthStore } from '@/lib/store';
 import { Link, useNavigate } from 'react-router-dom';
 
-import { Logo } from '@/components/logo';
 import {
     DropdownMenu,
     DropdownMenuContent,

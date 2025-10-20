@@ -23,7 +23,7 @@ const initialState = saved
     ? { ...JSON.parse(saved), isAuthenticated: true }
     : { token: null, user: null, isAuthenticated: false };
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
     ...initialState,
     login: (token, userData) => {
         // ✅ AUTO GENERATE INITIALS
