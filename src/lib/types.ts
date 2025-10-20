@@ -74,7 +74,6 @@ export interface LoginVariables {
     companyId: string;
 }
 
-// ADD THESE AT BOTTOM:
 export interface Order {
     order_id: string;
     order_no: string;
@@ -132,4 +131,40 @@ export interface AddOrderVariables {
     deliveryRequired?: string;
     paymentMode?: string;
     comments?: string;
+}
+
+// ADD THESE AT BOTTOM:
+export interface UpdateOrderResponse {
+    updateOrder: {
+        status: string;
+        message: string;
+        orders: {
+            order_date: string;
+            order_no: string;
+            __typename: string;
+        };
+        __typename: string;
+    };
+}
+
+export interface UpdateOrderVariables {
+    orderId: string;
+    clientId?: string;
+    salesmanId?: string;
+    orderDate?: string;
+    deliveryRequired?: string;
+    paymentMode?: string;
+    comments?: string;
+}
+
+export interface DeleteOrderResponse {
+    deleteOrder: {
+        status: string;
+        message: string;
+        __typename: string;
+    };
+}
+
+export interface DeleteOrderVariables {
+    orderId: string;
 }

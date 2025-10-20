@@ -49,3 +49,44 @@ export const ADD_ORDER_MUTATION = gql`
         }
     }
 `;
+
+export const UPDATE_ORDER_MUTATION = gql`
+    mutation UpdateOrder(
+        $orderId: String!
+        $clientId: String
+        $salesmanId: String
+        $orderDate: Date
+        $deliveryRequired: String
+        $paymentMode: String
+        $comments: String
+    ) {
+        updateOrder(
+            orderId: $orderId
+            clientId: $clientId
+            salesmanId: $salesmanId
+            orderDate: $orderDate
+            deliveryRequired: $deliveryRequired
+            paymentMode: $paymentMode
+            comments: $comments
+        ) {
+            status
+            message
+            orders {
+                order_date
+                order_no
+                __typename
+            }
+            __typename
+        }
+    }
+`;
+
+export const DELETE_ORDER_MUTATION = gql`
+    mutation DeleteOrder($orderId: String!) {
+        deleteOrder(orderId: $orderId) {
+            status
+            message
+            __typename
+        }
+    }
+`;
