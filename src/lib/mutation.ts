@@ -90,3 +90,36 @@ export const DELETE_ORDER_MUTATION = gql`
         }
     }
 `;
+
+// ADD THIS:
+export const ADD_ORDER_ITEM_MUTATION = gql`
+    mutation AddOrderItem(
+        $orderId: String!
+        $productId: String!
+        $packing: String
+        $price: Float
+        $qty: Float
+        $vatPerc: Float
+    ) {
+        addOrderItem(
+            orderId: $orderId
+            productId: $productId
+            packing: $packing
+            price: $price
+            qty: $qty
+            vatPerc: $vatPerc
+        ) {
+            status
+            message
+            orderItem {
+                id
+                order_id
+                product_id
+                vat_amount
+                price
+                __typename
+            }
+            __typename
+        }
+    }
+`;

@@ -168,3 +168,43 @@ export interface DeleteOrderResponse {
 export interface DeleteOrderVariables {
     orderId: string;
 }
+
+// ADD THESE AT BOTTOM:
+export interface GetProductsResponse {
+    products: {
+        id: string;
+        product_code: string;
+        product_name: string;
+        category: string;
+        brand: string;
+        packing: string;
+        price: number;
+        vat_percent: number;
+        stock_available: boolean;
+    }[];
+}
+
+export interface AddOrderItemResponse {
+    addOrderItem: {
+        status: string;
+        message: string;
+        orderItem: {
+            id: string;
+            order_id: string;
+            product_id: string;
+            vat_amount: number;
+            price: number;
+            __typename: string;
+        };
+        __typename: string;
+    };
+}
+
+export interface AddOrderItemVariables {
+    orderId: string;
+    productId: string;
+    packing?: string;
+    price?: number;
+    qty?: number;
+    vatPerc?: number;
+}
