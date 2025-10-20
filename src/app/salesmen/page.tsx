@@ -1,35 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useQuery } from '@apollo/client/react';
 import { BaseLayout } from '@/components/layouts/base-layout';
-
-import initialUsersData from './data.json';
 import { DataTable } from './components/data-table';
+import { GET_SALESMEN_QUERY } from '@/lib/queries';
+import type { SalesmenResponse } from '@/lib/types';
 
-interface User {
-    id: number;
+interface SalesmanTable {
+    id: string;
     name: string;
-    email: string;
+    sm_code: string;
     avatar: string;
-    role: string;
-    plan: string;
-    billing: string;
-    status: string;
-    joinedDate: string;
-    lastLogin: string;
-}
-
-interface UserFormValues {
-    name: string;
     email: string;
-    role: string;
-    plan: string;
-    billing: string;
-    status: string;
 }
 
 export default function SalesmenPage() {
-    const [users, setUsers] = useState<User[]>(initialUsersData);
+    const { data, loading, error } = useQuery<SalesmenResponse>(GET_SALESMEN_QUERY);
+
+    // Transform API data to table format
+    const salesmen: SalesmanTable[] =
+        data?.salesmen?.map((salesman) => ({
+            id: salesman.sm_code,
+            name: salesman.sm_name,
+            sm_code: salesman.sm_code,
+            avatar: generateAvatar(salesman.sm_name),
+            email: `${salesman.sm_name.toLowerCase().replace(' ', '.')}@company.com`, // Fake email
+        })) || [];
 
     const generateAvatar = (name: string) => {
         const names = name.split(' ');
@@ -39,42 +35,31 @@ export default function SalesmenPage() {
         return name.substring(0, 2).toUpperCase();
     };
 
-    const handleAddUser = (userData: UserFormValues) => {
-        const newUser: User = {
-            id: Math.max(...users.map((u) => u.id)) + 1,
-            name: userData.name,
-            email: userData.email,
-            avatar: generateAvatar(userData.name),
-            role: userData.role,
-            plan: userData.plan,
-            billing: userData.billing,
-            status: userData.status,
-            joinedDate: new Date().toISOString().split('T')[0],
-            lastLogin: new Date().toISOString().split('T')[0],
-        };
-        setUsers((prev) => [newUser, ...prev]);
-    };
+    if (loading) {
+        return (
+            <BaseLayout title="Salesmen" description="Manage your salesmen here">
+                <div className="flex justify-center items-center h-64">
+                    <div className="text-lg">Loading salesmen...</div>
+                </div>
+            </BaseLayout>
+        );
+    }
 
-    const handleDeleteUser = (id: number) => {
-        setUsers((prev) => prev.filter((user) => user.id !== id));
-    };
-
-    const handleEditUser = (user: User) => {
-        // For now, just log the user to edit
-        // In a real app, you'd open an edit dialog
-        console.log('Edit user:', user);
-    };
+    if (error) {
+        return (
+            <BaseLayout title="Salesmen" description="Manage your salesmen here">
+                <div className="flex justify-center items-center h-64">
+                    <div className="text-red-500">Error loading salesmen: {error.message}</div>
+                </div>
+            </BaseLayout>
+        );
+    }
 
     return (
         <BaseLayout title="Salesmen" description="Manage your salesmen here">
             <div className="flex flex-col gap-4">
                 <div className="@container/main px-4 lg:px-6 mt-8 lg:mt-12">
-                    <DataTable
-                        users={users}
-                        onDeleteUser={handleDeleteUser}
-                        onEditUser={handleEditUser}
-                        onAddUser={handleAddUser}
-                    />
+                    <DataTable users={salesmen} />
                 </div>
             </div>
         </BaseLayout>

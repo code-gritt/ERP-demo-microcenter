@@ -8,3 +8,13 @@ export const GET_COMPANIES_QUERY = gql`
         }
     }
 `;
+
+export const GET_SALESMEN_QUERY = gql`
+    query GetSalesman {
+        salesmen {
+            sm_code
+            sm_name
+            __typename
+        }
+    }
+`;

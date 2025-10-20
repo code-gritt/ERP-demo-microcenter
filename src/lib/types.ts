@@ -1,8 +1,6 @@
-// src/lib/types.ts
 export interface Company {
     company_id: string;
     company_name: string;
-    __typename: string;
 }
 
 export interface User {
@@ -14,11 +12,23 @@ export interface User {
     mobile_no: string;
 }
 
-export interface LoginResponse {
-    token: string;
-    user: User;
+export interface Salesman {
+    sm_code: string;
+    sm_name: string;
+    __typename: string;
 }
 
-export interface GetCompaniesResponse {
+export interface SalesmenResponse {
+    salesmen: Salesman[];
+}
+
+export interface CompaniesResponse {
     companies: Company[];
+}
+
+export interface LoginResponse {
+    login: {
+        token: string;
+        user: User;
+    } | null;
 }

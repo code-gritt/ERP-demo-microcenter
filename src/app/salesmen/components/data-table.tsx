@@ -41,32 +41,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 interface User {
-    id: number;
+    id: string;
     name: string;
-    email: string;
+    sm_code: string;
     avatar: string;
-    role: string;
-    plan: string;
-    billing: string;
-    status: string;
-    joinedDate: string;
-    lastLogin: string;
-}
-
-interface UserFormValues {
-    name: string;
     email: string;
-    role: string;
-    plan: string;
-    billing: string;
-    status: string;
 }
 
 interface DataTableProps {
     users: User[];
-    onDeleteUser: (id: number) => void;
-    onEditUser: (user: User) => void;
-    onAddUser: (userData: UserFormValues) => void;
 }
 
 export function DataTable({ users }: DataTableProps) {
@@ -77,12 +60,12 @@ export function DataTable({ users }: DataTableProps) {
     const [globalFilter, setGlobalFilter] = useState('');
 
     // Extract unique IDs and names for filter options
-    const uniqueIds = [...new Set(users.map((user) => user.id))].sort((a, b) => a - b);
+    const uniqueIds = [...new Set(users.map((user) => user.sm_code))].sort();
     const uniqueNames = [...new Set(users.map((user) => user.name))].sort();
 
     const columns: ColumnDef<User>[] = [
         {
-            accessorKey: 'id',
+            accessorKey: 'sm_code',
             header: ({ column }) => (
                 <div className="flex items-center gap-1">
                     <span>Salesman ID</span>
@@ -105,7 +88,7 @@ export function DataTable({ users }: DataTableProps) {
                                 <SelectContent>
                                     <SelectItem value="all">All IDs</SelectItem>
                                     {uniqueIds.map((id) => (
-                                        <SelectItem key={id} value={id.toString()}>
+                                        <SelectItem key={id} value={id}>
                                             {id}
                                         </SelectItem>
                                     ))}
@@ -116,10 +99,12 @@ export function DataTable({ users }: DataTableProps) {
                 </div>
             ),
             cell: ({ row }) => (
-                <span className="font-mono text-sm text-muted-foreground">{row.original.id}</span>
+                <span className="font-mono text-sm text-muted-foreground">
+                    {row.original.sm_code}
+                </span>
             ),
             enableSorting: true,
-            size: 50,
+            size: 80,
         },
         {
             accessorKey: 'name',
@@ -273,7 +258,7 @@ export function DataTable({ users }: DataTableProps) {
                 </Table>
             </div>
 
-            {/* Pagination & Page Size */}
+            {/* Pagination */}
             <div className="flex items-center justify-between space-x-2 py-4">
                 <div className="flex items-center space-x-2">
                     <Label htmlFor="page-size" className="text-sm font-medium">
@@ -283,8 +268,8 @@ export function DataTable({ users }: DataTableProps) {
                         value={`${table.getState().pagination.pageSize}`}
                         onValueChange={(value) => table.setPageSize(Number(value))}
                     >
-                        <SelectTrigger className="w-20 cursor-pointer" id="page-size">
-                            <SelectValue placeholder={table.getState().pagination.pageSize} />
+                        <SelectTrigger className="w-20" id="page-size">
+                            <SelectValue />
                         </SelectTrigger>
                         <SelectContent side="top">
                             {[10, 20, 30, 40, 50].map((pageSize) => (
@@ -294,10 +279,6 @@ export function DataTable({ users }: DataTableProps) {
                             ))}
                         </SelectContent>
                     </Select>
-                </div>
-                <div className="flex-1 text-sm text-muted-foreground hidden sm:block">
-                    {table.getFilteredSelectedRowModel().rows.length} of{' '}
-                    {table.getFilteredRowModel().rows.length} row(s) selected.
                 </div>
                 <div className="flex items-center space-x-6 lg:space-x-8">
                     <div className="flex items-center space-x-2 hidden sm:flex">
@@ -312,7 +293,6 @@ export function DataTable({ users }: DataTableProps) {
                             size="sm"
                             onClick={() => table.previousPage()}
                             disabled={!table.getCanPreviousPage()}
-                            className="cursor-pointer"
                         >
                             Previous
                         </Button>
@@ -321,7 +301,6 @@ export function DataTable({ users }: DataTableProps) {
                             size="sm"
                             onClick={() => table.nextPage()}
                             disabled={!table.getCanNextPage()}
-                            className="cursor-pointer"
                         >
                             Next
                         </Button>
