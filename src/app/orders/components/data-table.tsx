@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useMutation } from '@apollo/client/react';
 import {
     type ColumnDef,
@@ -13,7 +13,7 @@ import {
     getPaginationRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import { Search, RefreshCw, FileText, Edit, Trash } from 'lucide-react';
+import { Search, RefreshCw, FileText, Plus, Edit, Trash } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -93,16 +93,17 @@ interface OrdersTableProps {
     onPageChange: (offset: number) => void;
 }
 
+const paymentModes = ['Cash', 'Credit', 'L.P.O']; // Hardcoded as requested
+
 export function OrdersTable({
     orders,
     totalCount,
     pageSize,
     clients,
-
+    salesmen,
     refetchOrders,
     onPageChange,
 }: OrdersTableProps) {
-    // ✅ ALL MUTATIONS
     const [addOrderMutation] = useMutation<AddOrderResponse, AddOrderVariables>(ADD_ORDER_MUTATION);
     const [updateOrderMutation] = useMutation<UpdateOrderResponse, UpdateOrderVariables>(
         UPDATE_ORDER_MUTATION
@@ -120,9 +121,7 @@ export function OrdersTable({
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<OrderTable | null>(null);
-
-    // ✅ NEW ORDER
-    const [newOrder, setNewOrder] = useState<OrderTable>({
+    const [formData, setFormData] = useState<OrderTable>({
         id: '',
         orderNo: '',
         orderDate: new Date().toISOString().split('T')[0],
@@ -140,9 +139,6 @@ export function OrdersTable({
         modifiedBy: null,
         modifiedOn: null,
     });
-
-    // ✅ EDIT ORDER (POPULATED)
-    const editOrder = useMemo(() => (selectedOrder ? { ...selectedOrder } : null), [selectedOrder]);
 
     const filteredOrders = useMemo(() => {
         return orders.filter((o) => {
@@ -215,26 +211,26 @@ export function OrdersTable({
 
     // ✅ ADD ORDER
     const handleAddSave = async () => {
-        if (!newOrder.clientId || !newOrder.salesmanId || !newOrder.paymentMode) {
+        if (!formData.clientId || !formData.salesmanId || !formData.paymentMode) {
             toast.error('Please fill all required fields');
             return;
         }
         try {
             const variables: AddOrderVariables = {
-                clientId: newOrder.clientId,
-                salesmanId: newOrder.salesmanId,
-                orderDate: newOrder.orderDate,
-                deliveryRequired: newOrder.deliveryRequired ? 'Y' : 'N',
-                paymentMode: newOrder.paymentMode,
-                comments: newOrder.comments || '',
+                clientId: formData.clientId,
+                salesmanId: formData.salesmanId,
+                orderDate: formData.orderDate,
+                deliveryRequired: formData.deliveryRequired ? 'Y' : 'N',
+                paymentMode: formData.paymentMode,
+                comments: formData.comments || '',
             };
             const { data } = await addOrderMutation({ variables });
             if (data?.addOrder?.status === 'success') {
                 toast.success(`Order ${data.addOrder.orders.order_no} created!`);
                 setAddDialogOpen(false);
                 refetchOrders();
-                setNewOrder({
-                    ...newOrder,
+                setFormData({
+                    ...formData,
                     orderDate: new Date().toISOString().split('T')[0],
                     clientId: '',
                     clientName: '',
@@ -253,16 +249,16 @@ export function OrdersTable({
 
     // ✅ UPDATE ORDER
     const handleEditSave = async () => {
-        if (!editOrder) return;
+        if (!formData.id) return;
         try {
             const variables: UpdateOrderVariables = {
-                orderId: editOrder.id,
-                clientId: editOrder.clientId,
-                salesmanId: editOrder.salesmanId,
-                orderDate: editOrder.orderDate,
-                deliveryRequired: editOrder.deliveryRequired ? 'Y' : 'N',
-                paymentMode: editOrder.paymentMode,
-                comments: editOrder.comments || '',
+                orderId: formData.id,
+                clientId: formData.clientId,
+                salesmanId: formData.salesmanId,
+                orderDate: formData.orderDate,
+                deliveryRequired: formData.deliveryRequired ? 'Y' : 'N',
+                paymentMode: formData.paymentMode,
+                comments: formData.comments || '',
             };
             const { data } = await updateOrderMutation({ variables });
             if (data?.updateOrder?.status === 'success') {
@@ -309,83 +305,39 @@ export function OrdersTable({
         XLSX.utils.book_append_sheet(wb, ws, 'Orders');
         XLSX.writeFile(wb, 'orders.xlsx');
     };
+    // ✅ FORM CHANGE HANDLER (FIXED)
+    const handleFormChange = (field: keyof OrderTable, value: any) => {
+        setFormData((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
 
-    // ✅ DIALOG COMPONENTS
-    const OrderFormDialog = ({
-        isOpen,
-        onOpenChange,
-        title,
-        order,
-        onSave,
-        isEdit = false,
-    }: {
-        isOpen: boolean;
-        onOpenChange: (open: boolean) => void;
-        title: string;
-        order: OrderTable | null;
-        onSave: () => void;
-        isEdit?: boolean;
-    }) => (
-        <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                    <DialogTitle>{title}</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Client *</label>
-                            <Select
-                                value={order?.clientId || ''}
-                                onValueChange={() => {
-                                    if (order) onSave(); // Trigger save to update state
-                                    // TODO: Update order state here
-                                }}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select client" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {clients.map((client) => (
-                                        <SelectItem key={client.cu_code} value={client.cu_code}>
-                                            {client.cu_name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        {/* SIMPLIFIED - FULL FORM IN PRODUCTION */}
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Salesman *</label>
-                            <Input value={order?.salesmanName || ''} readOnly />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Payment Mode *</label>
-                            <Input value={order?.paymentMode || ''} readOnly />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Delivery *</label>
-                            <Input value={order?.deliveryRequired ? 'Yes' : 'No'} readOnly />
-                        </div>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Order Date</label>
-                        <Input type="date" value={order?.orderDate || ''} readOnly />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Comments</label>
-                        <Input value={order?.comments || ''} readOnly />
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => onOpenChange(false)}>
-                            Cancel
-                        </Button>
-                        <Button onClick={onSave}>{isEdit ? 'Update Order' : 'Create Order'}</Button>
-                    </DialogFooter>
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
+    // ✅ UPDATE FORM DATA ON EDIT
+    useEffect(() => {
+        if (selectedOrder) {
+            setFormData(selectedOrder);
+        } else {
+            setFormData({
+                id: '',
+                orderNo: '',
+                orderDate: new Date().toISOString().split('T')[0],
+                clientId: '',
+                clientName: '',
+                salesmanId: '',
+                salesmanName: '',
+                lineItems: 0,
+                netAmount: null,
+                deliveryRequired: true,
+                paymentMode: 'Credit',
+                comments: '',
+                createdBy: '',
+                createdOn: '',
+                modifiedBy: null,
+                modifiedOn: null,
+            });
+        }
+    }, [selectedOrder]);
 
     return (
         <div className="w-full space-y-4">
@@ -413,13 +365,12 @@ export function OrdersTable({
                     <Button className="bg-green-600 text-white" onClick={handleExport}>
                         <FileText className="mr-2 h-4 w-4" /> Export Excel
                     </Button>
-                    <OrderFormDialog
-                        isOpen={addDialogOpen}
-                        onOpenChange={setAddDialogOpen}
-                        title="Add New Order"
-                        order={newOrder}
-                        onSave={handleAddSave}
-                    />
+                    <Button
+                        className="bg-purple-600 text-white"
+                        onClick={() => setAddDialogOpen(true)}
+                    >
+                        <Plus className="mr-2 h-4 w-4" /> Add Order
+                    </Button>
                 </div>
             </div>
 
@@ -550,15 +501,259 @@ export function OrdersTable({
                 </div>
             </div>
 
+            {/* ADD DIALOG */}
+            <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Add Order</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-1">
+                                    Client ID *
+                                </label>
+                                <Select
+                                    value={formData.clientId}
+                                    onValueChange={(value) => {
+                                        const client = clients.find((c) => c.cu_code === value);
+                                        handleFormChange('clientId', value);
+                                        handleFormChange('clientName', client?.cu_name || '');
+                                    }}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a customer" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {clients.map((client) => (
+                                            <SelectItem key={client.cu_code} value={client.cu_code}>
+                                                {client.cu_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">
+                                    Salesman ID *
+                                </label>
+                                <Select
+                                    value={formData.salesmanId}
+                                    onValueChange={(value) => {
+                                        const salesman = salesmen.find((s) => s.sm_code === value);
+                                        handleFormChange('salesmanId', value);
+                                        handleFormChange('salesmanName', salesman?.sm_name || '');
+                                    }}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a salesman" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {salesmen.map((salesman) => (
+                                            <SelectItem
+                                                key={salesman.sm_code}
+                                                value={salesman.sm_code}
+                                            >
+                                                {salesman.sm_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">
+                                    Payment Mode *
+                                </label>
+                                <Select
+                                    value={formData.paymentMode}
+                                    onValueChange={(value) =>
+                                        handleFormChange('paymentMode', value)
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select payment mode" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {paymentModes.map((mode) => (
+                                            <SelectItem key={mode} value={mode}>
+                                                {mode}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">
+                                    Delivery Required *
+                                </label>
+                                <Select
+                                    value={formData.deliveryRequired ? 'Yes' : 'No'}
+                                    onValueChange={(value) =>
+                                        handleFormChange('deliveryRequired', value === 'Yes')
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select delivery" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Yes">Yes</SelectItem>
+                                        <SelectItem value="No">No</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Order Date</label>
+                            <Input
+                                type="date"
+                                value={formData.orderDate}
+                                onChange={(e) => handleFormChange('orderDate', e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Comments</label>
+                            <Input
+                                value={formData.comments}
+                                onChange={(e) => handleFormChange('comments', e.target.value)}
+                                placeholder="Enter comments"
+                            />
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button onClick={handleAddSave}>Create Order</Button>
+                        </DialogFooter>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
             {/* EDIT DIALOG */}
-            <OrderFormDialog
-                isOpen={editDialogOpen}
-                onOpenChange={setEditDialogOpen}
-                title="Edit Order"
-                order={editOrder}
-                onSave={handleEditSave}
-                isEdit={true}
-            />
+            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Edit Order</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-1">
+                                    Client ID *
+                                </label>
+                                <Select
+                                    value={formData.clientId}
+                                    onValueChange={(value) => {
+                                        const client = clients.find((c) => c.cu_code === value);
+                                        handleFormChange('clientId', value);
+                                        handleFormChange('clientName', client?.cu_name || '');
+                                    }}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a customer" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {clients.map((client) => (
+                                            <SelectItem key={client.cu_code} value={client.cu_code}>
+                                                {client.cu_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">
+                                    Salesman ID *
+                                </label>
+                                <Select
+                                    value={formData.salesmanId}
+                                    onValueChange={(value) => {
+                                        const salesman = salesmen.find((s) => s.sm_code === value);
+                                        handleFormChange('salesmanId', value);
+                                        handleFormChange('salesmanName', salesman?.sm_name || '');
+                                    }}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a salesman" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {salesmen.map((salesman) => (
+                                            <SelectItem
+                                                key={salesman.sm_code}
+                                                value={salesman.sm_code}
+                                            >
+                                                {salesman.sm_name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">
+                                    Payment Mode *
+                                </label>
+                                <Select
+                                    value={formData.paymentMode}
+                                    onValueChange={(value) =>
+                                        handleFormChange('paymentMode', value)
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select payment mode" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {paymentModes.map((mode) => (
+                                            <SelectItem key={mode} value={mode}>
+                                                {mode}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">
+                                    Delivery Required *
+                                </label>
+                                <Select
+                                    value={formData.deliveryRequired ? 'Yes' : 'No'}
+                                    onValueChange={(value) =>
+                                        handleFormChange('deliveryRequired', value === 'Yes')
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select delivery" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Yes">Yes</SelectItem>
+                                        <SelectItem value="No">No</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Order Date</label>
+                            <Input
+                                type="date"
+                                value={formData.orderDate}
+                                onChange={(e) => handleFormChange('orderDate', e.target.value)}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Comments</label>
+                            <Input
+                                value={formData.comments}
+                                onChange={(e) => handleFormChange('comments', e.target.value)}
+                                placeholder="Enter comments"
+                            />
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+                                Cancel
+                            </Button>
+                            <Button onClick={handleEditSave}>Update Order</Button>
+                        </DialogFooter>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             {/* DELETE DIALOG */}
             <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
