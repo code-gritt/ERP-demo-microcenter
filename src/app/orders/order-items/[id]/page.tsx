@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@apollo/client/react';
 import { gql } from '@apollo/client';
@@ -271,7 +271,7 @@ export interface AddOrderItemVariables {
 
 // Define the OrderItem interface
 interface OrderItem {
-    id: number;
+    id: string; // Changed from number to string to match typical API responses
     itemNo: string;
     productName: string;
     packing: string;
@@ -296,6 +296,28 @@ interface NewItemFormValues {
     costPrice: number;
     stock: number;
 }
+
+// Define the GET_ORDER_ITEMS_QUERY
+const GET_ORDER_ITEMS_QUERY = gql`
+    query GetOrderItems($orderId: String!) {
+        getOrderItems(orderId: $orderId) {
+            items {
+                id
+                itemNo
+                productName
+                packing
+                price
+                quantity
+                lineTotal
+                vatPercent
+                vatAmount
+                netAmount
+            }
+            totalCount
+            __typename
+        }
+    }
+`;
 
 // Define the GET_PRODUCTS_QUERY
 const GET_PRODUCTS_QUERY = gql`
@@ -357,8 +379,7 @@ const DragAlongCell = ({ cell }: { cell: any }) => {
 };
 
 export default function OrderItemsPage() {
-    const { id } = useParams();
-    const orderId = Number(id);
+    const { id } = useParams<{ id: string }>(); // Type the params to ensure id is a string
     const [items, setItems] = useState<OrderItem[]>([]);
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -378,10 +399,25 @@ export default function OrderItemsPage() {
         stock: 0,
     });
 
-    const { data } = useQuery<ProductsResponse>(GET_PRODUCTS_QUERY, {
+    // Fetch order items based on orderId
+    const { data: orderItemsData, refetch } = useQuery<{
+        getOrderItems: { items: OrderItem[]; totalCount: number; __typename: string };
+    }>(GET_ORDER_ITEMS_QUERY, {
+        variables: { orderId: id },
+        skip: !id, // Skip query if id is undefined
+    });
+
+    // Fetch products for the add item dialog
+    const { data: productsData } = useQuery<ProductsResponse>(GET_PRODUCTS_QUERY, {
         variables: { limit: 100, offset: 0, filters: {} },
     });
-    const products = data?.getProducts?.products || [];
+    const products = productsData?.getProducts?.products || [];
+
+    useEffect(() => {
+        if (orderItemsData?.getOrderItems?.items) {
+            setItems(orderItemsData.getOrderItems.items);
+        }
+    }, [orderItemsData]);
 
     const columns: ColumnDef<OrderItem>[] = useMemo(
         () => [
@@ -413,6 +449,7 @@ export default function OrderItemsPage() {
                             size="icon"
                             onClick={() => {
                                 setItems(items.filter((item) => item.id !== row.original.id));
+                                // Note: This local state change won't persist; consider a mutation to delete from backend
                             }}
                         >
                             <Trash className="h-4 w-4" />
@@ -475,7 +512,7 @@ export default function OrderItemsPage() {
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(items);
         XLSX.utils.book_append_sheet(wb, ws, 'OrderItems');
-        XLSX.writeFile(wb, `order_items_${orderId}.xlsx`);
+        XLSX.writeFile(wb, `order_items_${id}.xlsx`);
     };
 
     const handleAddSave = () => {
@@ -486,7 +523,7 @@ export default function OrderItemsPage() {
             selectedProduct.stock_available >= newItem.quantity
         ) {
             const newItemData = {
-                id: items.length + 1,
+                id: crypto.randomUUID(), // Generate a unique ID for the new item
                 itemNo: selectedProduct.prod_code,
                 productName: selectedProduct.product_name,
                 packing: '', // Packing data not available in response, to be updated if needed
@@ -497,7 +534,9 @@ export default function OrderItemsPage() {
                 vatAmount: 0, // To be calculated with proper VAT data
                 netAmount: selectedProduct.unit_price * newItem.quantity, // Simplified without VAT for now
             };
-            setItems((prev) => [newItemData, ...prev]);
+            // Here, you would typically use a mutation to add the item to the backend
+            // For now, we'll just update local state
+            setItems((prev) => [...prev, newItemData]);
             setAddDialogOpen(false);
             setNewItem({
                 itemNo: '',
@@ -511,6 +550,8 @@ export default function OrderItemsPage() {
                 costPrice: 0,
                 stock: 0,
             });
+            // Refetch to ensure the backend is updated if a mutation is implemented
+            refetch();
         }
     };
 
