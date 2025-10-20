@@ -23,7 +23,7 @@ const navGroups = [
         items: [
             {
                 title: 'Dashboard',
-                url: '/dashboard',
+                url: '/dashboard-2',
                 icon: LayoutPanelLeft,
             },
         ],

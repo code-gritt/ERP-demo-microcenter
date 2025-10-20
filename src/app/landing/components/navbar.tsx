@@ -131,7 +131,7 @@ export function LandingNavbar() {
                     {user ? (
                         <>
                             <Button variant="outline" asChild className="cursor-pointer">
-                                <a href="/dashboard">
+                                <a href="/dashboard-2">
                                     <LayoutDashboard className="h-4 w-4 mr-2" />
                                     Dashboard
                                 </a>
