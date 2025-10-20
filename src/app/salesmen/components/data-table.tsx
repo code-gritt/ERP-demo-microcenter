@@ -18,7 +18,6 @@ import { Search, Filter } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-
 import {
     Select,
     SelectContent,
@@ -105,8 +104,6 @@ export function DataTable({ users, loading = false }: DataTableProps) {
                     {row.original.sm_code}
                 </span>
             ),
-            enableSorting: true,
-            size: 80,
         },
         {
             accessorKey: 'name',
@@ -158,7 +155,6 @@ export function DataTable({ users, loading = false }: DataTableProps) {
                     </div>
                 );
             },
-            enableSorting: true,
         },
     ];
 
@@ -183,12 +179,9 @@ export function DataTable({ users, loading = false }: DataTableProps) {
         },
     });
 
+    // ✅ FIXED: Loader overlay full screen, not clipped inside small div
     if (loading) {
-        return (
-            <div className="flex h-64 items-center justify-center">
-                <LoaderSpinner size="w-16 h-16" />
-            </div>
-        );
+        return <LoaderSpinner />;
     }
 
     return (
