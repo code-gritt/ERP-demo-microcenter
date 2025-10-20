@@ -503,276 +503,302 @@ export function OrdersTable({
 
             {/* ADD DIALOG */}
             <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-                <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                        <DialogTitle>Add Order</DialogTitle>
+                <DialogContent className="max-w-3xl rounded-2xl p-6 shadow-lg">
+                    <DialogHeader className="mb-4 border-b pb-2">
+                        <DialogTitle className="text-xl font-semibold text-gray-900">
+                            Add New Order
+                        </DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Client ID *
-                                </label>
-                                <Select
-                                    value={formData.clientId}
-                                    onValueChange={(value) => {
-                                        const client = clients.find((c) => c.cu_code === value);
-                                        handleFormChange('clientId', value);
-                                        handleFormChange('clientName', client?.cu_name || '');
-                                    }}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a customer" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {clients.map((client) => (
-                                            <SelectItem key={client.cu_code} value={client.cu_code}>
-                                                {client.cu_name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Salesman ID *
-                                </label>
-                                <Select
-                                    value={formData.salesmanId}
-                                    onValueChange={(value) => {
-                                        const salesman = salesmen.find((s) => s.sm_code === value);
-                                        handleFormChange('salesmanId', value);
-                                        handleFormChange('salesmanName', salesman?.sm_name || '');
-                                    }}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a salesman" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {salesmen.map((salesman) => (
-                                            <SelectItem
-                                                key={salesman.sm_code}
-                                                value={salesman.sm_code}
-                                            >
-                                                {salesman.sm_name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Payment Mode *
-                                </label>
-                                <Select
-                                    value={formData.paymentMode}
-                                    onValueChange={(value) =>
-                                        handleFormChange('paymentMode', value)
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select payment mode" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {paymentModes.map((mode) => (
-                                            <SelectItem key={mode} value={mode}>
-                                                {mode}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Delivery Required *
-                                </label>
-                                <Select
-                                    value={formData.deliveryRequired ? 'Yes' : 'No'}
-                                    onValueChange={(value) =>
-                                        handleFormChange('deliveryRequired', value === 'Yes')
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select delivery" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="Yes">Yes</SelectItem>
-                                        <SelectItem value="No">No</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Client */}
+                        <div className="flex flex-col space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Client *</label>
+                            <Select
+                                value={formData.clientId}
+                                onValueChange={(value) => {
+                                    const client = clients.find((c) => c.cu_code === value);
+                                    handleFormChange('clientId', value);
+                                    handleFormChange('clientName', client?.cu_name || '');
+                                }}
+                            >
+                                <SelectTrigger className="h-10">
+                                    <SelectValue placeholder="Select client" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {clients.map((client) => (
+                                        <SelectItem key={client.cu_code} value={client.cu_code}>
+                                            {client.cu_name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Order Date</label>
+
+                        {/* Salesman */}
+                        <div className="flex flex-col space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Salesman *</label>
+                            <Select
+                                value={formData.salesmanId}
+                                onValueChange={(value) => {
+                                    const salesman = salesmen.find((s) => s.sm_code === value);
+                                    handleFormChange('salesmanId', value);
+                                    handleFormChange('salesmanName', salesman?.sm_name || '');
+                                }}
+                            >
+                                <SelectTrigger className="h-10">
+                                    <SelectValue placeholder="Select salesman" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {salesmen.map((salesman) => (
+                                        <SelectItem key={salesman.sm_code} value={salesman.sm_code}>
+                                            {salesman.sm_name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Payment */}
+                        <div className="flex flex-col space-y-2">
+                            <label className="text-sm font-medium text-gray-700">
+                                Payment Mode *
+                            </label>
+                            <Select
+                                value={formData.paymentMode}
+                                onValueChange={(value) => handleFormChange('paymentMode', value)}
+                            >
+                                <SelectTrigger className="h-10">
+                                    <SelectValue placeholder="Select payment mode" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {paymentModes.map((mode) => (
+                                        <SelectItem key={mode} value={mode}>
+                                            {mode}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Delivery */}
+                        <div className="flex flex-col space-y-2">
+                            <label className="text-sm font-medium text-gray-700">
+                                Delivery Required *
+                            </label>
+                            <Select
+                                value={formData.deliveryRequired ? 'Yes' : 'No'}
+                                onValueChange={(value) =>
+                                    handleFormChange('deliveryRequired', value === 'Yes')
+                                }
+                            >
+                                <SelectTrigger className="h-10">
+                                    <SelectValue placeholder="Select option" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Yes">Yes</SelectItem>
+                                    <SelectItem value="No">No</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Order Date */}
+                        <div className="flex flex-col space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Order Date</label>
                             <Input
                                 type="date"
+                                className="h-10"
                                 value={formData.orderDate}
                                 onChange={(e) => handleFormChange('orderDate', e.target.value)}
                             />
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Comments</label>
+
+                        {/* Comments */}
+                        <div className="flex flex-col space-y-2 md:col-span-2">
+                            <label className="text-sm font-medium text-gray-700">Comments</label>
                             <Input
+                                placeholder="Enter comments..."
+                                className="h-10"
                                 value={formData.comments}
                                 onChange={(e) => handleFormChange('comments', e.target.value)}
-                                placeholder="Enter comments"
                             />
                         </div>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
-                                Cancel
-                            </Button>
-                            <Button onClick={handleAddSave}>Create Order</Button>
-                        </DialogFooter>
                     </div>
+
+                    <DialogFooter className="mt-6 border-t pt-4">
+                        <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button className="bg-blue-600 text-white" onClick={handleAddSave}>
+                            Create Order
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
 
             {/* EDIT DIALOG */}
             <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-                <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                        <DialogTitle>Edit Order</DialogTitle>
+                <DialogContent className="max-w-3xl rounded-2xl p-6 shadow-lg">
+                    <DialogHeader className="mb-4 border-b pb-2">
+                        <DialogTitle className="text-xl font-semibold text-gray-900">
+                            Edit Order
+                        </DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Client ID *
-                                </label>
-                                <Select
-                                    value={formData.clientId}
-                                    onValueChange={(value) => {
-                                        const client = clients.find((c) => c.cu_code === value);
-                                        handleFormChange('clientId', value);
-                                        handleFormChange('clientName', client?.cu_name || '');
-                                    }}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a customer" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {clients.map((client) => (
-                                            <SelectItem key={client.cu_code} value={client.cu_code}>
-                                                {client.cu_name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Salesman ID *
-                                </label>
-                                <Select
-                                    value={formData.salesmanId}
-                                    onValueChange={(value) => {
-                                        const salesman = salesmen.find((s) => s.sm_code === value);
-                                        handleFormChange('salesmanId', value);
-                                        handleFormChange('salesmanName', salesman?.sm_name || '');
-                                    }}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a salesman" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {salesmen.map((salesman) => (
-                                            <SelectItem
-                                                key={salesman.sm_code}
-                                                value={salesman.sm_code}
-                                            >
-                                                {salesman.sm_name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Payment Mode *
-                                </label>
-                                <Select
-                                    value={formData.paymentMode}
-                                    onValueChange={(value) =>
-                                        handleFormChange('paymentMode', value)
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select payment mode" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {paymentModes.map((mode) => (
-                                            <SelectItem key={mode} value={mode}>
-                                                {mode}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium mb-1">
-                                    Delivery Required *
-                                </label>
-                                <Select
-                                    value={formData.deliveryRequired ? 'Yes' : 'No'}
-                                    onValueChange={(value) =>
-                                        handleFormChange('deliveryRequired', value === 'Yes')
-                                    }
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select delivery" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="Yes">Yes</SelectItem>
-                                        <SelectItem value="No">No</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Client */}
+                        <div className="flex flex-col space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Client *</label>
+                            <Select
+                                value={formData.clientId}
+                                onValueChange={(value) => {
+                                    const client = clients.find((c) => c.cu_code === value);
+                                    handleFormChange('clientId', value);
+                                    handleFormChange('clientName', client?.cu_name || '');
+                                }}
+                            >
+                                <SelectTrigger className="h-10">
+                                    <SelectValue placeholder="Select client" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {clients.map((client) => (
+                                        <SelectItem key={client.cu_code} value={client.cu_code}>
+                                            {client.cu_name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Order Date</label>
+
+                        {/* Salesman */}
+                        <div className="flex flex-col space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Salesman *</label>
+                            <Select
+                                value={formData.salesmanId}
+                                onValueChange={(value) => {
+                                    const salesman = salesmen.find((s) => s.sm_code === value);
+                                    handleFormChange('salesmanId', value);
+                                    handleFormChange('salesmanName', salesman?.sm_name || '');
+                                }}
+                            >
+                                <SelectTrigger className="h-10">
+                                    <SelectValue placeholder="Select salesman" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {salesmen.map((salesman) => (
+                                        <SelectItem key={salesman.sm_code} value={salesman.sm_code}>
+                                            {salesman.sm_name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Payment */}
+                        <div className="flex flex-col space-y-2">
+                            <label className="text-sm font-medium text-gray-700">
+                                Payment Mode *
+                            </label>
+                            <Select
+                                value={formData.paymentMode}
+                                onValueChange={(value) => handleFormChange('paymentMode', value)}
+                            >
+                                <SelectTrigger className="h-10">
+                                    <SelectValue placeholder="Select payment mode" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {paymentModes.map((mode) => (
+                                        <SelectItem key={mode} value={mode}>
+                                            {mode}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Delivery */}
+                        <div className="flex flex-col space-y-2">
+                            <label className="text-sm font-medium text-gray-700">
+                                Delivery Required *
+                            </label>
+                            <Select
+                                value={formData.deliveryRequired ? 'Yes' : 'No'}
+                                onValueChange={(value) =>
+                                    handleFormChange('deliveryRequired', value === 'Yes')
+                                }
+                            >
+                                <SelectTrigger className="h-10">
+                                    <SelectValue placeholder="Select option" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Yes">Yes</SelectItem>
+                                    <SelectItem value="No">No</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Order Date */}
+                        <div className="flex flex-col space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Order Date</label>
                             <Input
                                 type="date"
+                                className="h-10"
                                 value={formData.orderDate}
                                 onChange={(e) => handleFormChange('orderDate', e.target.value)}
                             />
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Comments</label>
+
+                        {/* Comments */}
+                        <div className="flex flex-col space-y-2 md:col-span-2">
+                            <label className="text-sm font-medium text-gray-700">Comments</label>
                             <Input
+                                placeholder="Enter comments..."
+                                className="h-10"
                                 value={formData.comments}
                                 onChange={(e) => handleFormChange('comments', e.target.value)}
-                                placeholder="Enter comments"
                             />
                         </div>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
-                                Cancel
-                            </Button>
-                            <Button onClick={handleEditSave}>Update Order</Button>
-                        </DialogFooter>
                     </div>
+
+                    <DialogFooter className="mt-6 border-t pt-4">
+                        <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button className="bg-blue-600 text-white" onClick={handleEditSave}>
+                            Update Order
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
 
             {/* DELETE DIALOG */}
             <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                <DialogContent>
+                <DialogContent className="max-w-md rounded-2xl p-6 text-center shadow-xl">
                     <DialogHeader>
-                        <DialogTitle>Confirm Delete</DialogTitle>
+                        <DialogTitle className="text-lg font-semibold text-red-600">
+                            Delete Order
+                        </DialogTitle>
                     </DialogHeader>
-                    <div className="text-center">
-                        <p className="text-red-600 mb-4">Delete Order {selectedOrder?.orderNo}?</p>
-                        <p className="text-gray-500 mb-4">This action cannot be undone.</p>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-                                Cancel
-                            </Button>
-                            <Button variant="destructive" onClick={handleDeleteConfirm}>
-                                Delete
-                            </Button>
-                        </DialogFooter>
-                    </div>
+
+                    <p className="text-gray-600 mt-2">
+                        Are you sure you want to delete order{' '}
+                        <span className="font-semibold text-red-500">{selectedOrder?.orderNo}</span>
+                        ?
+                    </p>
+                    <p className="text-gray-400 text-sm mb-6">This action cannot be undone.</p>
+
+                    <DialogFooter className="flex justify-center space-x-3">
+                        <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            className="bg-red-600 text-white"
+                            onClick={handleDeleteConfirm}
+                        >
+                            Delete
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>
