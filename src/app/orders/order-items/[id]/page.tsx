@@ -42,7 +42,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -67,7 +66,6 @@ export interface Company {
     company_id: string;
     company_name: string;
 }
-
 export interface User {
     user_id: string;
     user_name: string;
@@ -77,13 +75,11 @@ export interface User {
     mobile_no: string;
     initials?: string;
 }
-
 export interface Salesman {
     sm_code: string;
     sm_name: string;
     __typename: string;
 }
-
 export interface Customer {
     cu_code: string;
     cu_name: string;
@@ -91,7 +87,6 @@ export interface Customer {
     email_id: string;
     __typename: string;
 }
-
 export interface Product {
     prod_code: string;
     product_name: string;
@@ -104,42 +99,31 @@ export interface Product {
     stock_available: number;
     __typename: string;
 }
-
 export interface ProductsResult {
     products: Product[];
     totalCount: number;
     __typename: string;
 }
-
 export interface ProductsResponse {
     getProducts: ProductsResult;
 }
-
 export interface CustomersResponse {
     customers: Customer[];
 }
-
 export interface SalesmenResponse {
     salesmen: Salesman[];
 }
-
 export interface CompaniesResponse {
     companies: Company[];
 }
-
 export interface LoginResponse {
-    login: {
-        token: string;
-        user: User;
-    } | null;
+    login: { token: string; user: User } | null;
 }
-
 export interface LoginVariables {
     userName: string;
     password: string;
     companyId: string;
 }
-
 export interface Order {
     order_id: string;
     order_no: string;
@@ -162,17 +146,14 @@ export interface Order {
     deleted_on: string | null;
     __typename: string;
 }
-
 export interface OrdersResult {
     totalCount: number;
     orders: Order[];
     __typename: string;
 }
-
 export interface OrdersResponse {
     getOrders: OrdersResult;
 }
-
 export interface AddOrderResponse {
     addOrder: {
         status: string;
@@ -188,7 +169,6 @@ export interface AddOrderResponse {
         __typename: string;
     };
 }
-
 export interface AddOrderVariables {
     clientId: string;
     salesmanId: string;
@@ -197,20 +177,14 @@ export interface AddOrderVariables {
     paymentMode?: string;
     comments?: string;
 }
-
 export interface UpdateOrderResponse {
     updateOrder: {
         status: string;
         message: string;
-        orders: {
-            order_date: string;
-            order_no: string;
-            __typename: string;
-        };
+        orders: { order_date: string; order_no: string; __typename: string };
         __typename: string;
     };
 }
-
 export interface UpdateOrderVariables {
     orderId: string;
     clientId?: string;
@@ -220,19 +194,12 @@ export interface UpdateOrderVariables {
     paymentMode?: string;
     comments?: string;
 }
-
 export interface DeleteOrderResponse {
-    deleteOrder: {
-        status: string;
-        message: string;
-        __typename: string;
-    };
+    deleteOrder: { status: string; message: string; __typename: string };
 }
-
 export interface DeleteOrderVariables {
     orderId: string;
 }
-
 export interface GetProductsResponse {
     products: {
         id: string;
@@ -246,7 +213,6 @@ export interface GetProductsResponse {
         stock_available: boolean;
     }[];
 }
-
 export interface AddOrderItemResponse {
     addOrderItem: {
         status: string;
@@ -262,7 +228,6 @@ export interface AddOrderItemResponse {
         __typename: string;
     };
 }
-
 export interface AddOrderItemVariables {
     orderId: string;
     productId: string;
@@ -271,21 +236,14 @@ export interface AddOrderItemVariables {
     qty?: number;
     vatPerc?: number;
 }
-
 export interface UpdateOrderItemResponse {
     updateOrderItem: {
         status: string;
         message: string;
-        orderItem: {
-            id: string;
-            order_id: string;
-            product_id: string;
-            __typename: string;
-        };
+        orderItem: { id: string; order_id: string; product_id: string; __typename: string };
         __typename: string;
     };
 }
-
 export interface UpdateOrderItemVariables {
     orderId: string;
     itemId: string;
@@ -295,35 +253,27 @@ export interface UpdateOrderItemVariables {
     qty?: number;
     vatPerc?: number;
 }
-
 export interface DeleteOrderItemResponse {
-    deleteOrderItem: {
-        status: string;
-        message: string;
-        __typename: string;
-    };
+    deleteOrderItem: { status: string; message: string; __typename: string };
 }
-
 export interface DeleteOrderItemVariables {
     orderId: string;
     itemId: string;
 }
 
-// Define the OrderItem interface
 interface OrderItem {
     id: string;
-    itemNo: string;
-    productName: string;
+    product_id: string;
+    product_name: string;
     packing: string;
     price: number;
-    quantity: number;
-    lineTotal: number;
-    vatPercent: number;
-    vatAmount: number;
-    netAmount: number;
+    qty: number;
+    line_total: number;
+    vat_perc: number;
+    vat_amount: number;
+    net_amount: number;
 }
 
-// Define the NewItemFormValues interface
 interface NewItemFormValues {
     itemNo: string;
     productName: string;
@@ -337,29 +287,25 @@ interface NewItemFormValues {
     stock: number;
 }
 
-// Define the GET_ORDER_ITEMS_QUERY
+// Updated GET_ORDER_ITEMS_QUERY
 const GET_ORDER_ITEMS_QUERY = gql`
-    query GetOrderItems($orderId: String!) {
-        getOrderItems(orderId: $orderId) {
-            items {
-                id
-                itemNo
-                productName
-                packing
-                price
-                quantity
-                lineTotal
-                vatPercent
-                vatAmount
-                netAmount
-            }
-            totalCount
+    query OrderItems($orderId: ID!) {
+        orderItems(orderId: $orderId) {
+            id
+            product_id
+            product_name
+            packing
+            price
+            qty
+            line_total
+            vat_perc
+            vat_amount
+            net_amount
             __typename
         }
     }
 `;
 
-// Define the GET_PRODUCTS_QUERY
 const GET_PRODUCTS_QUERY = gql`
     query GetProducts($limit: Int, $offset: Int, $filters: ProductFilters) {
         getProducts(limit: $limit, offset: $offset, filters: $filters) {
@@ -518,8 +464,13 @@ export default function OrderItemsPage() {
         stock: 0,
     });
 
-    const { data: orderItemsData, refetch } = useQuery<{
-        getOrderItems: { items: OrderItem[]; totalCount: number; __typename: string };
+    const {
+        data: orderItemsData,
+        loading,
+        error,
+        refetch,
+    } = useQuery<{
+        orderItems: OrderItem[];
     }>(GET_ORDER_ITEMS_QUERY, {
         variables: { orderId: id },
         skip: !id,
@@ -531,10 +482,15 @@ export default function OrderItemsPage() {
     const products = productsData?.getProducts?.products || [];
 
     useEffect(() => {
-        if (orderItemsData?.getOrderItems?.items) {
-            setItems(orderItemsData.getOrderItems.items);
+        if (loading) return;
+        if (error) {
+            console.error('Error fetching order items:', error.message);
+            return;
         }
-    }, [orderItemsData]);
+        if (orderItemsData?.orderItems) {
+            setItems(orderItemsData.orderItems);
+        }
+    }, [orderItemsData, loading, error]);
 
     const [addOrderItem] = useMutation<AddOrderItemResponse, AddOrderItemVariables>(
         ADD_ORDER_ITEM_MUTATION
@@ -548,15 +504,15 @@ export default function OrderItemsPage() {
 
     const columns: ColumnDef<OrderItem>[] = useMemo(
         () => [
-            { accessorKey: 'itemNo', header: 'Item No', id: 'itemNo' },
-            { accessorKey: 'productName', header: 'Product Name', id: 'productName' },
+            { accessorKey: 'product_id', header: 'Item No', id: 'product_id' },
+            { accessorKey: 'product_name', header: 'Product Name', id: 'product_name' },
             { accessorKey: 'packing', header: 'Packing', id: 'packing' },
             { accessorKey: 'price', header: 'Price', id: 'price' },
-            { accessorKey: 'quantity', header: 'Quantity', id: 'quantity' },
-            { accessorKey: 'lineTotal', header: 'Line Total', id: 'lineTotal' },
-            { accessorKey: 'vatPercent', header: 'VAT %', id: 'vatPercent' },
-            { accessorKey: 'vatAmount', header: 'VAT Amount', id: 'vatAmount' },
-            { accessorKey: 'netAmount', header: 'Net Amount', id: 'netAmount' },
+            { accessorKey: 'qty', header: 'Quantity', id: 'qty' },
+            { accessorKey: 'line_total', header: 'Line Total', id: 'line_total' },
+            { accessorKey: 'vat_perc', header: 'VAT %', id: 'vat_perc' },
+            { accessorKey: 'vat_amount', header: 'VAT Amount', id: 'vat_amount' },
+            { accessorKey: 'net_amount', header: 'Net Amount', id: 'net_amount' },
             {
                 id: 'actions',
                 header: 'Action',
@@ -570,15 +526,15 @@ export default function OrderItemsPage() {
                                     onClick={() => {
                                         setSelectedItem(row.original);
                                         const prod = products.find(
-                                            (p) => p.product_name === row.original.productName
+                                            (p) => p.product_name === row.original.product_name
                                         );
                                         setNewItem({
-                                            itemNo: row.original.itemNo,
-                                            productName: row.original.productName,
+                                            itemNo: row.original.product_id,
+                                            productName: row.original.product_name,
                                             packing: row.original.packing || '',
                                             price: row.original.price,
-                                            quantity: row.original.quantity,
-                                            vatPercent: row.original.vatPercent,
+                                            quantity: row.original.qty,
+                                            vatPercent: row.original.vat_perc,
                                             category: prod?.prod_cat || '',
                                             brand: prod?.brand || '',
                                             costPrice: prod?.cost_price || 0,
@@ -751,11 +707,15 @@ export default function OrderItemsPage() {
                                                             qty: newItem.quantity,
                                                             vatPerc: newItem.vatPercent,
                                                         },
-                                                    }).then(() => {
-                                                        setEditDialogOpen(false);
-                                                        setSelectedItem(null);
-                                                        refetch();
-                                                    });
+                                                    })
+                                                        .then(() => {
+                                                            setEditDialogOpen(false);
+                                                            setSelectedItem(null);
+                                                            refetch();
+                                                        })
+                                                        .catch((err) =>
+                                                            console.error('Update error:', err)
+                                                        );
                                                 }
                                             }}
                                         >
@@ -765,25 +725,25 @@ export default function OrderItemsPage() {
                                 </div>
                             </DialogContent>
                         </Dialog>
-                        {/* DELETE BUTTON AND DIALOG */}
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                                setSelectedItem(row.original); // set the item to delete
-                                setDeleteDialogOpen(true); // manually open dialog
-                            }}
-                        >
-                            <Trash className="h-4 w-4" />
-                        </Button>
-
                         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                            <DialogTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => {
+                                        setSelectedItem(row.original);
+                                        setDeleteDialogOpen(true);
+                                    }}
+                                >
+                                    <Trash className="h-4 w-4" />
+                                </Button>
+                            </DialogTrigger>
                             <DialogContent>
                                 <DialogHeader>
                                     <DialogTitle>Delete Item</DialogTitle>
                                     <DialogDescription>
                                         Are you sure you want to delete the item "
-                                        {selectedItem?.productName}"? This action cannot be undone.
+                                        {selectedItem?.product_name}"? This action cannot be undone.
                                     </DialogDescription>
                                 </DialogHeader>
                                 <DialogFooter>
@@ -799,25 +759,27 @@ export default function OrderItemsPage() {
                                     <Button
                                         variant="destructive"
                                         onClick={() => {
-                                            if (!selectedItem || !id) return;
-
-                                            // Optimistically remove from UI
-                                            setItems((prev) =>
-                                                prev.filter((item) => item.id !== selectedItem.id)
-                                            );
-
-                                            deleteOrderItem({
-                                                variables: { orderId: id, itemId: selectedItem.id },
-                                            })
-                                                .then((res) => {
-                                                    console.log('Delete response:', res);
-                                                    refetch(); // refetch data to sync with backend
+                                            if (selectedItem && id) {
+                                                setItems((prev) =>
+                                                    prev.filter(
+                                                        (item) => item.id !== selectedItem.id
+                                                    )
+                                                );
+                                                deleteOrderItem({
+                                                    variables: {
+                                                        orderId: id,
+                                                        itemId: selectedItem.id,
+                                                    },
                                                 })
-
-                                                .finally(() => {
-                                                    setDeleteDialogOpen(false);
-                                                    setSelectedItem(null);
-                                                });
+                                                    .then(() => refetch())
+                                                    .catch((err) =>
+                                                        console.error('Delete error:', err)
+                                                    )
+                                                    .finally(() => {
+                                                        setDeleteDialogOpen(false);
+                                                        setSelectedItem(null);
+                                                    });
+                                            }
                                         }}
                                     >
                                         Delete
@@ -829,7 +791,7 @@ export default function OrderItemsPage() {
                 ),
             },
         ],
-        [items, editDialogOpen, deleteDialogOpen, products, selectedItem, newItem]
+        [items, editDialogOpen, deleteDialogOpen, products, selectedItem, newItem, id]
     );
 
     const sensors = useSensors(
@@ -909,15 +871,15 @@ export default function OrderItemsPage() {
                 ],
             ],
             body: items.map((item) => [
-                item.itemNo,
-                item.productName,
+                item.product_id,
+                item.product_name,
                 item.packing,
                 item.price.toFixed(2),
-                item.quantity,
-                item.lineTotal.toFixed(2),
-                item.vatPercent.toFixed(2),
-                item.vatAmount.toFixed(2),
-                item.netAmount.toFixed(2),
+                item.qty,
+                item.line_total.toFixed(2),
+                item.vat_perc.toFixed(2),
+                item.vat_amount.toFixed(2),
+                item.net_amount.toFixed(2),
             ]),
             theme: 'striped',
             headStyles: { fillColor: [124, 58, 237], textColor: [255, 255, 255] },
@@ -935,7 +897,7 @@ export default function OrderItemsPage() {
         doc.save(`invoice_${id}.pdf`);
     };
 
-    const handleAddSave = () => {
+    const handleAddSave = async () => {
         const selectedProduct = products.find((p) => p.product_name === newItem.productName);
         if (
             selectedProduct &&
@@ -944,17 +906,45 @@ export default function OrderItemsPage() {
         ) {
             const newItemData = {
                 id: crypto.randomUUID(),
-                itemNo: selectedProduct.prod_code,
-                productName: selectedProduct.product_name,
-                packing: '',
+                product_id: selectedProduct.prod_code,
+                product_name: selectedProduct.product_name,
+                packing: selectedProduct.packing || '',
                 price: selectedProduct.unit_price,
-                quantity: newItem.quantity,
-                lineTotal: selectedProduct.unit_price * newItem.quantity,
-                vatPercent: 0,
-                vatAmount: 0,
-                netAmount: selectedProduct.unit_price * newItem.quantity,
+                qty: newItem.quantity,
+                line_total: selectedProduct.unit_price * newItem.quantity,
+                vat_perc: selectedProduct.vat_perc || 0,
+                vat_amount:
+                    (selectedProduct.unit_price *
+                        newItem.quantity *
+                        (selectedProduct.vat_perc || 0)) /
+                    100,
+                net_amount:
+                    selectedProduct.unit_price *
+                    newItem.quantity *
+                    (1 + (selectedProduct.vat_perc || 0) / 100),
             };
             setItems((prev) => [...prev, newItemData]);
+            try {
+                const response = await addOrderItem({
+                    variables: {
+                        orderId: id || '',
+                        productId: newItem.itemNo,
+                        packing: selectedProduct.packing || '',
+                        price: selectedProduct.unit_price,
+                        qty: newItem.quantity,
+                        vatPerc: selectedProduct.vat_perc || 0,
+                    },
+                });
+                if (response.data?.addOrderItem?.status === 'success') {
+                    refetch();
+                } else {
+                    console.error('Failed to add item:', response.data?.addOrderItem?.message);
+                    setItems((prev) => prev.filter((item) => item.id !== newItemData.id)); // Rollback on failure
+                }
+            } catch (err) {
+                console.error('Error adding item:', err);
+                setItems((prev) => prev.filter((item) => item.id !== newItemData.id)); // Rollback on error
+            }
             setAddDialogOpen(false);
             setNewItem({
                 itemNo: '',
@@ -968,11 +958,10 @@ export default function OrderItemsPage() {
                 costPrice: 0,
                 stock: 0,
             });
-            refetch();
         }
     };
 
-    const totalAmount = items.reduce((sum, item) => sum + item.netAmount, 0);
+    const totalAmount = items.reduce((sum, item) => sum + item.net_amount, 0);
 
     return (
         <BaseLayout title="Orders" description="Manage your orders here">
@@ -991,224 +980,243 @@ export default function OrderItemsPage() {
                     onDragEnd={handleDragEnd}
                 >
                     <div className="p-4">
-                        <div className="mb-4 justify-start flex gap-4">
-                            <Button variant="outline" onClick={() => window.history.back()}>
-                                Back Page
-                            </Button>
-                            <div className="relative flex-1 max-w-sm ml-2">
-                                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search..."
-                                    value={globalFilter ?? ''}
-                                    onChange={(event) =>
-                                        setGlobalFilter(String(event.target.value))
-                                    }
-                                    className="pl-9"
-                                />
-                            </div>
-                        </div>
-                        <div className="flex justify-end gap-4 mb-4">
-                            <Button className="bg-green-600 text-white" onClick={handleExport}>
-                                <Download className="mr-2 h-4 w-4" /> Export to Excel
-                            </Button>
-                            <Button
-                                className="bg-green-600 text-white"
-                                onClick={handleDownloadInvoice}
-                            >
-                                <Download className="mr-2 h-4 w-4" /> Download Invoice
-                            </Button>
-                            <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-                                <DialogTrigger asChild>
-                                    <Button className="bg-purple-600 text-white">
-                                        <Plus className="mr-2 h-4 w-4" /> Add Item
+                        {loading && <div>Loading...</div>}
+                        {error && <div>Error: {error.message}</div>}
+                        {!loading && !error && (
+                            <>
+                                <div className="mb-4 justify-start flex gap-4">
+                                    <Button variant="outline" onClick={() => window.history.back()}>
+                                        Back Page
                                     </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                    <DialogHeader>
-                                        <DialogTitle>Add New Item</DialogTitle>
-                                    </DialogHeader>
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                Select Product *
-                                            </label>
-                                            <Select
-                                                onValueChange={(value) => {
-                                                    const prod = products.find(
-                                                        (p) => p.product_name === value
-                                                    );
-                                                    if (prod) {
-                                                        setNewItem({
-                                                            ...newItem,
-                                                            itemNo: prod.prod_code,
-                                                            productName: prod.product_name,
-                                                            packing: '',
-                                                            price: prod.unit_price,
-                                                            quantity: newItem.quantity,
-                                                            vatPercent: 0,
-                                                            category: '',
-                                                            brand: '',
-                                                            costPrice: 0,
-                                                            stock: prod.stock_available,
-                                                        });
-                                                    }
-                                                }}
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select product" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {products.map((prod) => (
-                                                        <SelectItem
-                                                            key={prod.prod_code}
-                                                            value={prod.product_name}
-                                                        >
-                                                            {prod.product_name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700">
-                                                    Product ID
-                                                </label>
-                                                <Input value={newItem.itemNo} disabled />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700">
-                                                    Packing
-                                                </label>
-                                                <Input value={newItem.packing} disabled />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700">
-                                                    Unit Price
-                                                </label>
-                                                <Input value={newItem.price} disabled />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700">
-                                                    Cost Price
-                                                </label>
-                                                <Input value={newItem.costPrice} disabled />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700">
-                                                    VAT Percentage
-                                                </label>
-                                                <Input value={newItem.vatPercent} disabled />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700">
-                                                    Category
-                                                </label>
-                                                <Input value={newItem.category} disabled />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700">
-                                                    Brand
-                                                </label>
-                                                <Input value={newItem.brand} disabled />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700">
-                                                    Stock Available
-                                                </label>
-                                                <Input disabled value={newItem.stock} />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700">
-                                                    Quantity *
-                                                </label>
-                                                <Input
-                                                    value={newItem.quantity}
-                                                    onChange={(e) =>
-                                                        setNewItem({
-                                                            ...newItem,
-                                                            quantity: Number(e.target.value),
-                                                        })
-                                                    }
-                                                />
-                                            </div>
-                                        </div>
-                                        <DialogFooter>
-                                            <Button
-                                                variant="outline"
-                                                onClick={() => setAddDialogOpen(false)}
-                                            >
-                                                Cancel
-                                            </Button>
-                                            <Button
-                                                className="bg-purple-600 text-white"
-                                                onClick={handleAddSave}
-                                            >
-                                                Submit
-                                            </Button>
-                                        </DialogFooter>
+                                    <div className="relative flex-1 max-w-sm ml-2">
+                                        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                                        <Input
+                                            placeholder="Search..."
+                                            value={globalFilter ?? ''}
+                                            onChange={(event) =>
+                                                setGlobalFilter(String(event.target.value))
+                                            }
+                                            className="pl-9"
+                                        />
                                     </div>
-                                </DialogContent>
-                            </Dialog>
-                        </div>
+                                </div>
+                                <div className="flex justify-end gap-4 mb-4">
+                                    <Button
+                                        className="bg-green-600 text-white"
+                                        onClick={handleExport}
+                                    >
+                                        <Download className="mr-2 h-4 w-4" /> Export to Excel
+                                    </Button>
+                                    <Button
+                                        className="bg-green-600 text-white"
+                                        onClick={handleDownloadInvoice}
+                                    >
+                                        <Download className="mr-2 h-4 w-4" /> Download Invoice
+                                    </Button>
+                                    <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+                                        <DialogTrigger asChild>
+                                            <Button className="bg-purple-600 text-white">
+                                                <Plus className="mr-2 h-4 w-4" /> Add Item
+                                            </Button>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                            <DialogHeader>
+                                                <DialogTitle>Add New Item</DialogTitle>
+                                            </DialogHeader>
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-gray-700">
+                                                        Select Product *
+                                                    </label>
+                                                    <Select
+                                                        onValueChange={(value) => {
+                                                            const prod = products.find(
+                                                                (p) => p.product_name === value
+                                                            );
+                                                            if (prod) {
+                                                                setNewItem({
+                                                                    ...newItem,
+                                                                    itemNo: prod.prod_code,
+                                                                    productName: prod.product_name,
+                                                                    packing: prod.packing || '',
+                                                                    price: prod.unit_price,
+                                                                    quantity: newItem.quantity,
+                                                                    vatPercent: prod.vat_perc || 0,
+                                                                    category: prod.prod_cat || '',
+                                                                    brand: prod.brand || '',
+                                                                    costPrice: prod.cost_price || 0,
+                                                                    stock: prod.stock_available,
+                                                                });
+                                                            }
+                                                        }}
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Select product" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {products.map((prod) => (
+                                                                <SelectItem
+                                                                    key={prod.prod_code}
+                                                                    value={prod.product_name}
+                                                                >
+                                                                    {prod.product_name}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700">
+                                                            Product ID
+                                                        </label>
+                                                        <Input value={newItem.itemNo} disabled />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700">
+                                                            Packing
+                                                        </label>
+                                                        <Input value={newItem.packing} disabled />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700">
+                                                            Unit Price
+                                                        </label>
+                                                        <Input value={newItem.price} disabled />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700">
+                                                            Cost Price
+                                                        </label>
+                                                        <Input value={newItem.costPrice} disabled />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700">
+                                                            VAT Percentage
+                                                        </label>
+                                                        <Input
+                                                            value={newItem.vatPercent}
+                                                            disabled
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700">
+                                                            Category
+                                                        </label>
+                                                        <Input value={newItem.category} disabled />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700">
+                                                            Brand
+                                                        </label>
+                                                        <Input value={newItem.brand} disabled />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700">
+                                                            Stock Available
+                                                        </label>
+                                                        <Input disabled value={newItem.stock} />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700">
+                                                            Quantity *
+                                                        </label>
+                                                        <Input
+                                                            value={newItem.quantity}
+                                                            onChange={(e) =>
+                                                                setNewItem({
+                                                                    ...newItem,
+                                                                    quantity: Number(
+                                                                        e.target.value
+                                                                    ),
+                                                                })
+                                                            }
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <DialogFooter>
+                                                    <Button
+                                                        variant="outline"
+                                                        onClick={() => setAddDialogOpen(false)}
+                                                    >
+                                                        Cancel
+                                                    </Button>
+                                                    <Button
+                                                        className="bg-purple-600 text-white"
+                                                        onClick={handleAddSave}
+                                                    >
+                                                        Submit
+                                                    </Button>
+                                                </DialogFooter>
+                                            </div>
+                                        </DialogContent>
+                                    </Dialog>
+                                </div>
 
-                        <div className="rounded-md border">
-                            <Table>
-                                <TableHeader>
-                                    {table.getHeaderGroups().map((headerGroup) => (
-                                        <TableRow key={headerGroup.id}>
-                                            <SortableContext
-                                                items={
-                                                    columnOrder.length > 0
-                                                        ? columnOrder
-                                                        : columns.map((col) => col.id || '')
-                                                }
-                                                strategy={horizontalListSortingStrategy}
-                                            >
-                                                {headerGroup.headers.map((header) => (
-                                                    <DraggableTableHeader
-                                                        key={header.id}
-                                                        header={header}
-                                                    />
-                                                ))}
-                                            </SortableContext>
-                                        </TableRow>
-                                    ))}
-                                </TableHeader>
-                                <TableBody>
-                                    {table.getRowModel().rows?.length ? (
-                                        table.getRowModel().rows.map((row) => (
-                                            <TableRow key={row.id}>
-                                                <SortableContext
-                                                    items={
-                                                        columnOrder.length > 0
-                                                            ? columnOrder
-                                                            : columns.map((col) => col.id || '')
-                                                    }
-                                                    strategy={horizontalListSortingStrategy}
-                                                >
-                                                    {row.getVisibleCells().map((cell) => (
-                                                        <DragAlongCell key={cell.id} cell={cell} />
-                                                    ))}
-                                                </SortableContext>
-                                            </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell
-                                                colSpan={columns.length}
-                                                className="h-24 text-center"
-                                            >
-                                                No results.
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </div>
-                        <div className="mt-4 text-right">
-                            <strong>Total: {totalAmount.toLocaleString()} </strong>
-                        </div>
+                                <div className="rounded-md border">
+                                    <Table>
+                                        <TableHeader>
+                                            {table.getHeaderGroups().map((headerGroup) => (
+                                                <TableRow key={headerGroup.id}>
+                                                    <SortableContext
+                                                        items={
+                                                            columnOrder.length > 0
+                                                                ? columnOrder
+                                                                : columns.map((col) => col.id || '')
+                                                        }
+                                                        strategy={horizontalListSortingStrategy}
+                                                    >
+                                                        {headerGroup.headers.map((header) => (
+                                                            <DraggableTableHeader
+                                                                key={header.id}
+                                                                header={header}
+                                                            />
+                                                        ))}
+                                                    </SortableContext>
+                                                </TableRow>
+                                            ))}
+                                        </TableHeader>
+                                        <TableBody>
+                                            {table.getRowModel().rows?.length ? (
+                                                table.getRowModel().rows.map((row) => (
+                                                    <TableRow key={row.id}>
+                                                        <SortableContext
+                                                            items={
+                                                                columnOrder.length > 0
+                                                                    ? columnOrder
+                                                                    : columns.map(
+                                                                          (col) => col.id || ''
+                                                                      )
+                                                            }
+                                                            strategy={horizontalListSortingStrategy}
+                                                        >
+                                                            {row.getVisibleCells().map((cell) => (
+                                                                <DragAlongCell
+                                                                    key={cell.id}
+                                                                    cell={cell}
+                                                                />
+                                                            ))}
+                                                        </SortableContext>
+                                                    </TableRow>
+                                                ))
+                                            ) : (
+                                                <TableRow>
+                                                    <TableCell
+                                                        colSpan={columns.length}
+                                                        className="h-24 text-center"
+                                                    >
+                                                        No results.
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                                <div className="mt-4 text-right">
+                                    <strong>Total: {totalAmount.toLocaleString()}</strong>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </DndContext>
             </div>
