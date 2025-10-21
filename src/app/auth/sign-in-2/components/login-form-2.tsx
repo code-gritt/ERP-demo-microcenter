@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client/react';
 import { cn } from '@/lib/utils';
@@ -22,11 +24,15 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
     const [company, setCompany] = useState('');
     const { login } = useAuthStore();
 
-    const [loginMutation, { loading, error }] = useMutation<LoginResponse, LoginVariables>(
-        LOGIN_MUTATION
-    );
-    const { data: companiesData, loading: companiesLoading } =
-        useQuery<CompaniesResponse>(GET_COMPANIES_QUERY);
+    const [loginMutation, { loading, error: loginError }] = useMutation<
+        LoginResponse,
+        LoginVariables
+    >(LOGIN_MUTATION);
+    const {
+        data: companiesData,
+        loading: companiesLoading,
+        error: companiesError,
+    } = useQuery<CompaniesResponse>(GET_COMPANIES_QUERY);
 
     const companies = companiesData?.companies ?? [];
 
@@ -35,6 +41,12 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
             setCompany(companies[0].company_id);
         }
     }, [companies, company]);
+
+    useEffect(() => {
+        if (companiesError) {
+            console.error('Companies query error:', companiesError.message);
+        }
+    }, [companiesError]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -93,11 +105,19 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
 
                 <div className="grid gap-3">
                     <Label htmlFor="company">Company</Label>
-                    <Select value={company} onValueChange={setCompany}>
+                    <Select
+                        value={company}
+                        onValueChange={setCompany}
+                        disabled={companiesLoading || !!companiesError}
+                    >
                         <SelectTrigger className="w-full">
                             <SelectValue
                                 placeholder={
-                                    companiesLoading ? 'Loading companies...' : 'Select company'
+                                    companiesLoading
+                                        ? 'Loading companies...'
+                                        : companiesError
+                                        ? 'Failed to load companies'
+                                        : 'Select company'
                                 }
                             />
                         </SelectTrigger>
@@ -109,16 +129,28 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
                             ))}
                         </SelectContent>
                     </Select>
+                    {companiesError && (
+                        <p className="text-red-500 text-sm">
+                            Error loading companies: {companiesError.message}
+                        </p>
+                    )}
                 </div>
 
-                {error && (
+                {loginError && (
                     <p className="text-red-500 text-sm">Invalid username, password, or company.</p>
                 )}
 
                 <Button
                     type="submit"
                     className="w-full"
-                    disabled={loading || companiesLoading || !company || !email || !password}
+                    disabled={
+                        loading ||
+                        companiesLoading ||
+                        !!companiesError ||
+                        !company ||
+                        !email ||
+                        !password
+                    }
                 >
                     {loading ? 'Signing in...' : 'Sign In'}
                 </Button>
