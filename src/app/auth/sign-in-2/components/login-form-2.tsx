@@ -21,7 +21,7 @@ import type { CompaniesResponse, LoginResponse, LoginVariables } from '@/lib/typ
 export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [company, setCompany] = useState('');
+    const [company, setCompany] = useState('01'); // Default to "01"
     const { login } = useAuthStore();
 
     const [loginMutation, { loading, error: loginError }] = useMutation<
@@ -37,8 +37,9 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
     const companies = companiesData?.companies ?? [];
 
     useEffect(() => {
-        if (companies.length > 0 && !company) {
-            setCompany(companies[0].company_id);
+        // Only set company to "01" if not already set and "01" is a valid option
+        if (!company && companies.some((c) => c.company_id === '01')) {
+            setCompany('01');
         }
     }, [companies, company]);
 
@@ -50,14 +51,14 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!company) return;
+        if (!company) return; // Shouldn't happen due to default
 
         try {
             const { data } = await loginMutation({
                 variables: {
                     userName: email,
                     password,
-                    companyId: company,
+                    companyId: company, // Will be "01" by default
                 },
             });
 
@@ -105,11 +106,7 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
 
                 <div className="grid gap-3">
                     <Label htmlFor="company">Company</Label>
-                    <Select
-                        value={company}
-                        onValueChange={setCompany}
-                        disabled={companiesLoading || !!companiesError}
-                    >
+                    <Select value={company} onValueChange={setCompany} disabled={false}>
                         <SelectTrigger className="w-full">
                             <SelectValue
                                 placeholder={
@@ -117,7 +114,8 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
                                         ? 'Loading companies...'
                                         : companiesError
                                         ? 'Failed to load companies'
-                                        : 'Select company'
+                                        : companies.find((c) => c.company_id === '01')
+                                              ?.company_name || 'KEWALRAM AND SONS W.L.L'
                                 }
                             />
                         </SelectTrigger>
@@ -144,12 +142,7 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
                     type="submit"
                     className="w-full"
                     disabled={
-                        loading ||
-                        companiesLoading ||
-                        !!companiesError ||
-                        !company ||
-                        !email ||
-                        !password
+                        loading || companiesLoading || !!companiesError || !email || !password
                     }
                 >
                     {loading ? 'Signing in...' : 'Sign In'}
