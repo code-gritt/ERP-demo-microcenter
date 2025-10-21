@@ -584,14 +584,14 @@ export default function OrderItemsPage() {
                             <Button className="bg-green-600 text-white" onClick={handleExport}>
                                 <Download className="mr-2 h-4 w-4" /> Export to Excel
                             </Button>
-                            <Button
+                            {/* <Button
                                 className="bg-green-600 text-white"
                                 onClick={() => {
-                                    /* Download logic */
+                            
                                 }}
                             >
                                 <Download className="mr-2 h-4 w-4" /> Download Invoice
-                            </Button>
+                            </Button> */}
                             <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
                                 <DialogTrigger asChild>
                                     <Button className="bg-purple-600 text-white">
