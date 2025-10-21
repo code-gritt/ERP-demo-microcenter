@@ -43,6 +43,8 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import {
     DndContext,
     closestCenter,
@@ -283,12 +285,27 @@ export interface UpdateOrderItemResponse {
     };
 }
 
+export interface UpdateOrderItemVariables {
+    orderId: string;
+    itemId: string;
+    productId?: string;
+    packing?: string;
+    price?: number;
+    qty?: number;
+    vatPerc?: number;
+}
+
 export interface DeleteOrderItemResponse {
     deleteOrderItem: {
         status: string;
         message: string;
         __typename: string;
     };
+}
+
+export interface DeleteOrderItemVariables {
+    orderId: string;
+    itemId: string;
 }
 
 export interface OrderItem {
@@ -543,7 +560,7 @@ export default function OrderItemsPage() {
         }
     );
 
-    const [updateOrderItem] = useMutation<UpdateOrderItemResponse, AddOrderItemVariables>(
+    const [updateOrderItem] = useMutation<UpdateOrderItemResponse, UpdateOrderItemVariables>(
         UPDATE_ORDER_ITEM_MUTATION,
         {
             onCompleted: (data) => {
@@ -572,22 +589,22 @@ export default function OrderItemsPage() {
         }
     );
 
-    const [deleteOrderItem] = useMutation<
-        DeleteOrderItemResponse,
-        { orderId: string; itemId: string }
-    >(DELETE_ORDER_ITEM_MUTATION, {
-        onCompleted: (data) => {
-            if (data.deleteOrderItem.status === 'success') {
-                setDeleteDialogOpen(false);
-                setSelectedItem(null);
-                refetch();
-            }
-        },
-        onError: (error) => {
-            console.error('Error deleting order item:', error);
-            // TODO: Add toast notification for user feedback
-        },
-    });
+    const [deleteOrderItem] = useMutation<DeleteOrderItemResponse, DeleteOrderItemVariables>(
+        DELETE_ORDER_ITEM_MUTATION,
+        {
+            onCompleted: (data) => {
+                if (data.deleteOrderItem.status === 'success') {
+                    setDeleteDialogOpen(false);
+                    setSelectedItem(null);
+                    refetch();
+                }
+            },
+            onError: (error) => {
+                console.error('Error deleting order item:', error);
+                // TODO: Add toast notification for user feedback
+            },
+        }
+    );
 
     useEffect(() => {
         if (orderItemsData?.getOrderItems?.items) {
@@ -633,6 +650,7 @@ export default function OrderItemsPage() {
                                             costPrice: prod?.cost_price || 0,
                                             stock: prod?.stock_available || 0,
                                         });
+                                        setEditDialogOpen(true); // Explicitly open the dialog
                                     }}
                                 >
                                     <Edit className="h-4 w-4" />
@@ -785,7 +803,7 @@ export default function OrderItemsPage() {
                                         >
                                             Cancel
                                         </Button>
-                                        {/* <Button
+                                        <Button
                                             className="bg-purple-600 text-white"
                                             onClick={() => {
                                                 if (selectedItem && id) {
@@ -804,7 +822,7 @@ export default function OrderItemsPage() {
                                             }}
                                         >
                                             Save
-                                        </Button> */}
+                                        </Button>
                                     </DialogFooter>
                                 </div>
                             </DialogContent>
@@ -816,6 +834,7 @@ export default function OrderItemsPage() {
                                     size="icon"
                                     onClick={() => {
                                         setSelectedItem(row.original);
+                                        setDeleteDialogOpen(true); // Explicitly open the dialog
                                     }}
                                 >
                                     <Trash className="h-4 w-4" />
@@ -914,6 +933,71 @@ export default function OrderItemsPage() {
         XLSX.writeFile(wb, `order_items_${id}.xlsx`);
     };
 
+    const handleDownloadInvoice = () => {
+        const doc = new jsPDF();
+
+        // Add header
+        doc.setFillColor(124, 58, 237); // bg-purple-600
+        doc.rect(0, 0, 210, 20, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(16);
+        doc.text(`Invoice - Order #${id}`, 10, 12);
+
+        // Add table
+        (doc as any).autoTable({
+            startY: 30,
+            head: [
+                [
+                    'Item No',
+                    'Product Name',
+                    'Packing',
+                    'Price',
+                    'Quantity',
+                    'Line Total',
+                    'VAT %',
+                    'VAT Amount',
+                    'Net Amount',
+                ],
+            ],
+            body: items.map((item) => [
+                item.itemNo,
+                item.productName,
+                item.packing,
+                item.price.toFixed(2),
+                item.quantity,
+                item.lineTotal.toFixed(2),
+                item.vatPercent.toFixed(2),
+                item.vatAmount.toFixed(2),
+                item.netAmount.toFixed(2),
+            ]),
+            theme: 'striped',
+            headStyles: {
+                fillColor: [124, 58, 237], // bg-purple-600
+                textColor: [255, 255, 255],
+            },
+            styles: {
+                cellPadding: 2,
+                fontSize: 10,
+            },
+        });
+
+        // Add total amount
+        const finalY = (doc as any).lastAutoTable.finalY || 30;
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Total: ${totalAmount.toLocaleString()}`, 10, finalY + 10);
+
+        // Add footer
+        doc.setFillColor(22, 163, 74); // bg-green-600
+        doc.rect(0, 287, 210, 10, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(10);
+        doc.text('Generated on ' + new Date().toLocaleDateString(), 10, 293);
+
+        // Download the PDF
+        doc.save(`invoice_${id}.pdf`);
+    };
+
     const handleAddSave = () => {
         const selectedProduct = products.find((p) => p.product_name === newItem.productName);
         if (
@@ -991,9 +1075,7 @@ export default function OrderItemsPage() {
                             </Button>
                             <Button
                                 className="bg-green-600 text-white"
-                                onClick={() => {
-                                    /* Download logic */
-                                }}
+                                onClick={handleDownloadInvoice}
                             >
                                 <Download className="mr-2 h-4 w-4" /> Download Invoice
                             </Button>
