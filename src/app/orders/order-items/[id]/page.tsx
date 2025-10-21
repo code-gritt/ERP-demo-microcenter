@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client/react';
 import { gql } from '@apollo/client';
 import {
@@ -494,6 +494,8 @@ const DragAlongCell = ({ cell }: { cell: any }) => {
 
 export default function OrderItemsPage() {
     const { id } = useParams<{ id: string }>();
+    const location = useLocation();
+    const orderData = location.state as { clientName: string; orderNo: string } | null;
     const [items, setItems] = useState<OrderItem[]>([]);
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -968,6 +970,12 @@ export default function OrderItemsPage() {
     return (
         <BaseLayout title="Orders" description="Manage your orders here">
             <div className="flex flex-col gap-4">
+                <div className="p-4 bg-gray-100 border-b">
+                    <div className="text-lg font-semibold text-gray-800">
+                        Client Name: {orderData?.clientName || 'N/A'} | Order No:{' '}
+                        {orderData?.orderNo || 'N/A'}
+                    </div>
+                </div>
                 <div className="@container/main px-4 lg:px-6 mt-8 lg:mt-12"></div>
                 <DndContext
                     sensors={sensors}

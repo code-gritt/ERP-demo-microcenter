@@ -172,7 +172,13 @@ export function OrdersTable({
                 accessorKey: 'noOfLineItems',
                 header: 'Line Items',
                 cell: ({ row }) => (
-                    <Link to={`/order-items/${row.original.id}`}>
+                    <Link
+                        to={`/order-items/${row.original.id}`}
+                        state={{
+                            clientName: row.original.clientName,
+                            orderNo: row.original.orderNo,
+                        }}
+                    >
                         <Badge variant="secondary">{row.original.noOfLineItems} items</Badge>
                     </Link>
                 ),
