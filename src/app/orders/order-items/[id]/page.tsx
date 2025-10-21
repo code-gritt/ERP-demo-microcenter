@@ -921,7 +921,7 @@ export default function OrderItemsPage() {
                                     />
                                 </div>
                             </div>
-                            <div className="flex justify-end gap-4 mb-4">
+                            <div className="flex flex-wrap justify-end gap-4 mb-4">
                                 <Button className="bg-green-600 text-white" onClick={handleExport}>
                                     <Download className="mr-2 h-4 w-4" /> Export to Excel
                                 </Button>
