@@ -21,7 +21,7 @@ import type { CompaniesResponse, LoginResponse, LoginVariables } from '@/lib/typ
 export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [company, setCompany] = useState('01'); // Default to "01"
+    const [company, setCompany] = useState('01');
     const { login } = useAuthStore();
 
     const [loginMutation, { loading, error: loginError }] = useMutation<
@@ -32,33 +32,43 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
         data: companiesData,
         loading: companiesLoading,
         error: companiesError,
-    } = useQuery<CompaniesResponse>(GET_COMPANIES_QUERY);
+    } = useQuery<CompaniesResponse>(GET_COMPANIES_QUERY, {
+        errorPolicy: 'ignore',
+    });
 
     const companies = companiesData?.companies ?? [];
 
     useEffect(() => {
-        // Only set company to "01" if not already set and "01" is a valid option
-        if (!company && companies.some((c) => c.company_id === '01')) {
-            setCompany('01');
+        if (companies.length > 0) {
+            const defaultCompany = companies.find((c) => c.company_id === '01');
+            if (defaultCompany) {
+                setCompany('01');
+            } else if (!company) {
+                setCompany(companies[0]?.company_id || '01');
+            }
         }
     }, [companies, company]);
 
     useEffect(() => {
         if (companiesError) {
             console.error('Companies query error:', companiesError.message);
+
+            if (!company) {
+                setCompany('01');
+            }
         }
-    }, [companiesError]);
+    }, [companiesError, company]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!company) return; // Shouldn't happen due to default
+        if (!company) return;
 
         try {
             const { data } = await loginMutation({
                 variables: {
                     userName: email,
                     password,
-                    companyId: company, // Will be "01" by default
+                    companyId: company,
                 },
             });
 
@@ -106,15 +116,19 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
 
                 <div className="grid gap-3">
                     <Label htmlFor="company">Company</Label>
-                    <Select value={company} onValueChange={setCompany} disabled={false}>
+                    <Select
+                        value={company}
+                        onValueChange={setCompany}
+                        disabled={companiesLoading || !!companiesError}
+                    >
                         <SelectTrigger className="w-full">
                             <SelectValue
                                 placeholder={
                                     companiesLoading
                                         ? 'Loading companies...'
                                         : companiesError
-                                        ? 'Failed to load companies'
-                                        : companies.find((c) => c.company_id === '01')
+                                        ? 'Failed to load companies (using default: 01)'
+                                        : companies.find((c) => c.company_id === company)
                                               ?.company_name || 'KEWALRAM AND SONS W.L.L'
                                 }
                             />
@@ -125,11 +139,16 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
                                     {comp.company_name}
                                 </SelectItem>
                             ))}
+                            {!companies.length && !companiesError && (
+                                <SelectItem value="01" disabled>
+                                    Default: KEWALRAM AND SONS W.L.L (ID: 01)
+                                </SelectItem>
+                            )}
                         </SelectContent>
                     </Select>
                     {companiesError && (
                         <p className="text-red-500 text-sm">
-                            Error loading companies: {companiesError.message}
+                            Error loading companies: {companiesError.message}. Using default ID: 01.
                         </p>
                     )}
                 </div>
@@ -142,7 +161,12 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
                     type="submit"
                     className="w-full"
                     disabled={
-                        loading || companiesLoading || !!companiesError || !email || !password
+                        loading ||
+                        companiesLoading ||
+                        !!companiesError ||
+                        !company ||
+                        !email ||
+                        !password
                     }
                 >
                     {loading ? 'Signing in...' : 'Sign In'}
