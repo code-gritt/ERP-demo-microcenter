@@ -15,7 +15,9 @@ export interface OrderTable {
     clientName: string;
     salesmanId: string; // KEEP for UI, will map from salesman_name
     salesmanName: string;
-    lineItems: number;
+    lineItemsTotal: number | null;
+    noOfLineItems: number;
+    vatAmount: number | null;
     netAmount: number | null;
     deliveryRequired: boolean;
     paymentMode: string;
@@ -24,6 +26,8 @@ export interface OrderTable {
     createdOn: string;
     modifiedBy: string | null;
     modifiedOn: string | null;
+    deletedBy: string | null;
+    deletedOn: string | null;
 }
 
 export default function OrdersPage() {
@@ -43,7 +47,6 @@ export default function OrdersPage() {
     // Transform API data with salesman mapping
     const orders: OrderTable[] =
         ordersData?.getOrders?.orders?.map((order) => {
-            // Map salesman_id from salesman_name (approximate mapping)
             const salesman = salesmenData?.salesmen.find((s) => s.sm_name === order.salesman_name);
             return {
                 id: order.order_id,
@@ -51,9 +54,11 @@ export default function OrdersPage() {
                 orderDate: new Date(order.order_date).toISOString().split('T')[0],
                 clientId: order.client_id,
                 clientName: order.client_name,
-                salesmanId: salesman ? salesman.sm_code : '', // Approximate ID
+                salesmanId: salesman ? salesman.sm_code : '',
                 salesmanName: order.salesman_name,
-                lineItems: order.no_of_line_items,
+                lineItemsTotal: order.line_items_total,
+                noOfLineItems: order.no_of_line_items,
+                vatAmount: order.vat_amount,
                 netAmount: order.net_amount,
                 deliveryRequired: order.delivery_required === 'Y',
                 paymentMode: order.payment_mode,
@@ -62,6 +67,8 @@ export default function OrdersPage() {
                 createdOn: order.created_on.split('T')[0],
                 modifiedBy: order.modified_by,
                 modifiedOn: order.modified_on ? order.modified_on.split('T')[0] : null,
+                deletedBy: order.deleted_by,
+                deletedOn: order.deleted_on ? order.deleted_on.split('T')[0] : null,
             };
         }) || [];
 

@@ -61,7 +61,9 @@ export interface OrderTable {
     clientName: string;
     salesmanId: string;
     salesmanName: string;
-    lineItems: number;
+    lineItemsTotal: number | null;
+    noOfLineItems: number;
+    vatAmount: number | null;
     netAmount: number | null;
     deliveryRequired: boolean;
     paymentMode: string;
@@ -70,6 +72,8 @@ export interface OrderTable {
     createdOn: string;
     modifiedBy: string | null;
     modifiedOn: string | null;
+    deletedBy: string | null;
+    deletedOn: string | null;
 }
 
 interface Client {
@@ -94,7 +98,7 @@ interface OrdersTableProps {
     onPageChange: (offset: number) => void;
 }
 
-const paymentModes = ['Cash', 'Credit', 'L.P.O']; // Hardcoded as requested
+const paymentModes = ['Cash', 'Credit', 'L.P.O'];
 
 export function OrdersTable({
     orders,
@@ -130,7 +134,9 @@ export function OrdersTable({
         clientName: '',
         salesmanId: '',
         salesmanName: '',
-        lineItems: 0,
+        lineItemsTotal: null,
+        noOfLineItems: 0,
+        vatAmount: null,
         netAmount: null,
         deliveryRequired: true,
         paymentMode: 'Credit',
@@ -139,6 +145,8 @@ export function OrdersTable({
         createdOn: '',
         modifiedBy: null,
         modifiedOn: null,
+        deletedBy: null,
+        deletedOn: null,
     });
 
     const filteredOrders = useMemo(() => {
@@ -161,14 +169,30 @@ export function OrdersTable({
             { accessorKey: 'clientName', header: 'Client', size: 200 },
             { accessorKey: 'salesmanName', header: 'Salesman', size: 150 },
             {
-                accessorKey: 'lineItems',
+                accessorKey: 'noOfLineItems',
                 header: 'Line Items',
                 cell: ({ row }) => (
                     <Link to={`/order-items/${row.original.id}`}>
-                        <Badge variant="secondary">{row.original.lineItems} items</Badge>
+                        <Badge variant="secondary">{row.original.noOfLineItems} items</Badge>
                     </Link>
                 ),
                 size: 100,
+            },
+            {
+                accessorKey: 'lineItemsTotal',
+                header: 'Line Items Total',
+                cell: ({ row }) =>
+                    row.original.lineItemsTotal
+                        ? `$${row.original.lineItemsTotal.toFixed(2)}`
+                        : '-',
+                size: 120,
+            },
+            {
+                accessorKey: 'vatAmount',
+                header: 'VAT Amount',
+                cell: ({ row }) =>
+                    row.original.vatAmount ? `$${row.original.vatAmount.toFixed(2)}` : '-',
+                size: 120,
             },
             {
                 accessorKey: 'netAmount',
@@ -189,7 +213,33 @@ export function OrdersTable({
             },
             { accessorKey: 'paymentMode', header: 'Payment', size: 120 },
             { accessorKey: 'comments', header: 'Comments', size: 150 },
-            { accessorKey: 'createdBy', header: 'Created', size: 100 },
+            { accessorKey: 'createdBy', header: 'Created By', size: 100 },
+            {
+                accessorKey: 'createdOn',
+                header: 'Created On',
+                cell: ({ row }) => new Date(row.original.createdOn).toLocaleDateString(),
+                size: 120,
+            },
+            { accessorKey: 'modifiedBy', header: 'Modified By', size: 100 },
+            {
+                accessorKey: 'modifiedOn',
+                header: 'Modified On',
+                cell: ({ row }) =>
+                    row.original.modifiedOn
+                        ? new Date(row.original.modifiedOn).toLocaleDateString()
+                        : '-',
+                size: 120,
+            },
+            { accessorKey: 'deletedBy', header: 'Deleted By', size: 100 },
+            {
+                accessorKey: 'deletedOn',
+                header: 'Deleted On',
+                cell: ({ row }) =>
+                    row.original.deletedOn
+                        ? new Date(row.original.deletedOn).toLocaleDateString()
+                        : '-',
+                size: 120,
+            },
         ],
         []
     );
@@ -212,7 +262,6 @@ export function OrdersTable({
     const currentPage = table.getState().pagination.pageIndex;
     const totalPages = table.getPageCount();
 
-    // ✅ ADD ORDER
     const handleAddSave = async () => {
         if (!formData.clientId || !formData.salesmanId || !formData.paymentMode) {
             toast.error('Please fill all required fields');
@@ -250,7 +299,6 @@ export function OrdersTable({
         }
     };
 
-    // ✅ UPDATE ORDER
     const handleEditSave = async () => {
         if (!formData.id) return;
         try {
@@ -276,7 +324,6 @@ export function OrdersTable({
         }
     };
 
-    // ✅ DELETE ORDER
     const handleDeleteConfirm = async () => {
         if (!selectedOrder) return;
         try {
@@ -308,7 +355,7 @@ export function OrdersTable({
         XLSX.utils.book_append_sheet(wb, ws, 'Orders');
         XLSX.writeFile(wb, 'orders.xlsx');
     };
-    // ✅ FORM CHANGE HANDLER (FIXED)
+
     const handleFormChange = (field: keyof OrderTable, value: any) => {
         setFormData((prev) => ({
             ...prev,
@@ -316,7 +363,6 @@ export function OrdersTable({
         }));
     };
 
-    // ✅ UPDATE FORM DATA ON EDIT
     useEffect(() => {
         if (selectedOrder) {
             setFormData(selectedOrder);
@@ -329,7 +375,9 @@ export function OrdersTable({
                 clientName: '',
                 salesmanId: '',
                 salesmanName: '',
-                lineItems: 0,
+                lineItemsTotal: null,
+                noOfLineItems: 0,
+                vatAmount: null,
                 netAmount: null,
                 deliveryRequired: true,
                 paymentMode: 'Credit',
@@ -338,13 +386,14 @@ export function OrdersTable({
                 createdOn: '',
                 modifiedBy: null,
                 modifiedOn: null,
+                deletedBy: null,
+                deletedOn: null,
             });
         }
     }, [selectedOrder]);
 
     return (
         <div className="w-full space-y-4">
-            {/* CONTROLS */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <span>Filter by Date:</span>
@@ -377,7 +426,6 @@ export function OrdersTable({
                 </div>
             </div>
 
-            {/* SEARCH */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex flex-1 items-center space-x-2">
                     <div className="relative flex-1 max-w-sm">
@@ -392,7 +440,6 @@ export function OrdersTable({
                 </div>
             </div>
 
-            {/* TABLE */}
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>
@@ -401,6 +448,7 @@ export function OrdersTable({
                                 {headerGroup.headers.map((header) => (
                                     <TableHead
                                         key={header.id}
+                                        style={{ width: header.getSize() }}
                                         onClick={header.column.getToggleSortingHandler()}
                                     >
                                         {flexRender(
@@ -472,7 +520,6 @@ export function OrdersTable({
                 </Table>
             </div>
 
-            {/* PAGINATION */}
             <div className="flex items-center justify-between space-x-2 py-4">
                 <div className="text-sm text-muted-foreground">
                     Showing {currentPage * pageSize + 1} to{' '}
@@ -504,7 +551,6 @@ export function OrdersTable({
                 </div>
             </div>
 
-            {/* ADD DIALOG */}
             <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
                 <DialogContent className="max-w-3xl rounded-2xl p-6 shadow-lg">
                     <DialogHeader className="mb-4 border-b pb-2">
@@ -512,9 +558,7 @@ export function OrdersTable({
                             Add New Order
                         </DialogTitle>
                     </DialogHeader>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Client */}
                         <div className="flex flex-col space-y-2">
                             <label className="text-sm font-medium text-gray-700">Client *</label>
                             <Select
@@ -537,8 +581,6 @@ export function OrdersTable({
                                 </SelectContent>
                             </Select>
                         </div>
-
-                        {/* Salesman */}
                         <div className="flex flex-col space-y-2">
                             <label className="text-sm font-medium text-gray-700">Salesman *</label>
                             <Select
@@ -561,8 +603,6 @@ export function OrdersTable({
                                 </SelectContent>
                             </Select>
                         </div>
-
-                        {/* Payment */}
                         <div className="flex flex-col space-y-2">
                             <label className="text-sm font-medium text-gray-700">
                                 Payment Mode *
@@ -583,8 +623,6 @@ export function OrdersTable({
                                 </SelectContent>
                             </Select>
                         </div>
-
-                        {/* Delivery */}
                         <div className="flex flex-col space-y-2">
                             <label className="text-sm font-medium text-gray-700">
                                 Delivery Required *
@@ -604,8 +642,6 @@ export function OrdersTable({
                                 </SelectContent>
                             </Select>
                         </div>
-
-                        {/* Order Date */}
                         <div className="flex flex-col space-y-2">
                             <label className="text-sm font-medium text-gray-700">Order Date</label>
                             <Input
@@ -615,8 +651,6 @@ export function OrdersTable({
                                 onChange={(e) => handleFormChange('orderDate', e.target.value)}
                             />
                         </div>
-
-                        {/* Comments */}
                         <div className="flex flex-col space-y-2 md:col-span-2">
                             <label className="text-sm font-medium text-gray-700">Comments</label>
                             <Input
@@ -627,7 +661,6 @@ export function OrdersTable({
                             />
                         </div>
                     </div>
-
                     <DialogFooter className="mt-6 border-t pt-4">
                         <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
                             Cancel
@@ -639,7 +672,6 @@ export function OrdersTable({
                 </DialogContent>
             </Dialog>
 
-            {/* EDIT DIALOG */}
             <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
                 <DialogContent className="max-w-3xl rounded-2xl p-6 shadow-lg">
                     <DialogHeader className="mb-4 border-b pb-2">
@@ -647,9 +679,7 @@ export function OrdersTable({
                             Edit Order
                         </DialogTitle>
                     </DialogHeader>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Client */}
                         <div className="flex flex-col space-y-2">
                             <label className="text-sm font-medium text-gray-700">Client *</label>
                             <Select
@@ -672,8 +702,6 @@ export function OrdersTable({
                                 </SelectContent>
                             </Select>
                         </div>
-
-                        {/* Salesman */}
                         <div className="flex flex-col space-y-2">
                             <label className="text-sm font-medium text-gray-700">Salesman *</label>
                             <Select
@@ -696,8 +724,6 @@ export function OrdersTable({
                                 </SelectContent>
                             </Select>
                         </div>
-
-                        {/* Payment */}
                         <div className="flex flex-col space-y-2">
                             <label className="text-sm font-medium text-gray-700">
                                 Payment Mode *
@@ -718,8 +744,6 @@ export function OrdersTable({
                                 </SelectContent>
                             </Select>
                         </div>
-
-                        {/* Delivery */}
                         <div className="flex flex-col space-y-2">
                             <label className="text-sm font-medium text-gray-700">
                                 Delivery Required *
@@ -739,8 +763,6 @@ export function OrdersTable({
                                 </SelectContent>
                             </Select>
                         </div>
-
-                        {/* Order Date */}
                         <div className="flex flex-col space-y-2">
                             <label className="text-sm font-medium text-gray-700">Order Date</label>
                             <Input
@@ -750,8 +772,6 @@ export function OrdersTable({
                                 onChange={(e) => handleFormChange('orderDate', e.target.value)}
                             />
                         </div>
-
-                        {/* Comments */}
                         <div className="flex flex-col space-y-2 md:col-span-2">
                             <label className="text-sm font-medium text-gray-700">Comments</label>
                             <Input
@@ -762,7 +782,6 @@ export function OrdersTable({
                             />
                         </div>
                     </div>
-
                     <DialogFooter className="mt-6 border-t pt-4">
                         <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
                             Cancel
@@ -774,7 +793,6 @@ export function OrdersTable({
                 </DialogContent>
             </Dialog>
 
-            {/* DELETE DIALOG */}
             <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                 <DialogContent className="max-w-md rounded-2xl p-6 text-center shadow-xl">
                     <DialogHeader>
@@ -782,14 +800,12 @@ export function OrdersTable({
                             Delete Order
                         </DialogTitle>
                     </DialogHeader>
-
                     <p className="text-gray-600 mt-2">
                         Are you sure you want to delete order{' '}
                         <span className="font-semibold text-red-500">{selectedOrder?.orderNo}</span>
                         ?
                     </p>
                     <p className="text-gray-400 text-sm mb-6">This action cannot be undone.</p>
-
                     <DialogFooter className="flex justify-center space-x-3">
                         <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
                             Cancel
