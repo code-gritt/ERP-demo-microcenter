@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { useQuery, useMutation } from '@apollo/client/react';
+import { useQuery, useMutation, useApolloClient } from '@apollo/client/react';
 import { gql } from '@apollo/client';
 import {
     type ColumnDef,
@@ -15,7 +15,7 @@ import {
     getPaginationRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import { Search, Download, Plus, Edit, Trash } from 'lucide-react';
+import { Search, Download, Plus, Edit, Trash, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -140,65 +140,6 @@ export interface OrdersResult {
 export interface OrdersResponse {
     getOrders: OrdersResult;
 }
-export interface AddOrderResponse {
-    addOrder: {
-        status: string;
-        message: string;
-        orders: {
-            order_no: string;
-            order_date: string;
-            payment_mode: string;
-            created_by: string;
-            created_on: string;
-            __typename: string;
-        };
-        __typename: string;
-    };
-}
-export interface AddOrderVariables {
-    clientId: string;
-    salesmanId: string;
-    orderDate?: string;
-    deliveryRequired?: string;
-    paymentMode?: string;
-    comments?: string;
-}
-export interface UpdateOrderResponse {
-    updateOrder: {
-        status: string;
-        message: string;
-        orders: { order_date: string; order_no: string; __typename: string };
-        __typename: string;
-    };
-}
-export interface UpdateOrderVariables {
-    orderId: string;
-    clientId?: string;
-    salesmanId?: string;
-    orderDate?: string;
-    deliveryRequired?: string;
-    paymentMode?: string;
-    comments?: string;
-}
-export interface DeleteOrderResponse {
-    deleteOrder: { status: string; message: string; __typename: string };
-}
-export interface DeleteOrderVariables {
-    orderId: string;
-}
-export interface GetProductsResponse {
-    products: {
-        id: string;
-        product_code: string;
-        product_name: string;
-        category: string;
-        brand: string;
-        packing: string;
-        price: number;
-        vat_percent: number;
-        stock_available: boolean;
-    }[];
-}
 export interface AddOrderItemResponse {
     addOrderItem: {
         status: string;
@@ -300,6 +241,11 @@ const GET_PRODUCTS_QUERY = gql`
                 stock_available
                 unit_price
                 product_name
+                brand
+                prod_cat
+                packing
+                cost_price
+                vat_perc
             }
         }
     }
@@ -404,6 +350,8 @@ export default function OrderItemsPage() {
         stock: 0,
     });
 
+    const client = useApolloClient();
+
     const {
         data: orderItemsData,
         loading,
@@ -458,280 +406,46 @@ export default function OrderItemsPage() {
                 header: 'Action',
                 cell: ({ row }) => (
                     <div className="flex space-x-2">
-                        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-                            <DialogTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => {
-                                        setSelectedItem(row.original);
-                                        const prod = products.find(
-                                            (p) => p.product_name === row.original.product_name
-                                        );
-                                        setNewItem({
-                                            itemNo: row.original.product_id,
-                                            productName: row.original.product_name,
-                                            packing: row.original.packing || '',
-                                            price: row.original.price,
-                                            quantity: row.original.qty,
-                                            vatPercent: row.original.vat_perc,
-                                            category: prod?.prod_cat || '',
-                                            brand: prod?.brand || '',
-                                            costPrice: prod?.cost_price || 0,
-                                            stock: prod?.stock_available || 0,
-                                        });
-                                        setEditDialogOpen(true);
-                                    }}
-                                >
-                                    <Edit className="h-4 w-4" />
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Edit Item</DialogTitle>
-                                </DialogHeader>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">
-                                            Select Product *
-                                        </label>
-                                        <Select
-                                            value={newItem.productName}
-                                            onValueChange={(value) => {
-                                                const prod = products.find(
-                                                    (p) => p.product_name === value
-                                                );
-                                                if (prod) {
-                                                    setNewItem({
-                                                        ...newItem,
-                                                        itemNo: prod.prod_code,
-                                                        productName: prod.product_name,
-                                                        packing: prod.packing || '',
-                                                        price: prod.unit_price,
-                                                        vatPercent: prod.vat_perc || 0,
-                                                        category: prod.prod_cat || '',
-                                                        brand: prod.brand || '',
-                                                        costPrice: prod.cost_price || 0,
-                                                        stock: prod.stock_available,
-                                                    });
-                                                }
-                                            }}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select product" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {products.map((prod) => (
-                                                    <SelectItem
-                                                        key={prod.prod_code}
-                                                        value={prod.product_name}
-                                                    >
-                                                        {prod.product_name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                Product ID
-                                            </label>
-                                            <Input value={newItem.itemNo} disabled />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                Packing
-                                            </label>
-                                            <Input
-                                                value={newItem.packing}
-                                                onChange={(e) =>
-                                                    setNewItem({
-                                                        ...newItem,
-                                                        packing: e.target.value,
-                                                    })
-                                                }
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                Unit Price
-                                            </label>
-                                            <Input
-                                                type="number"
-                                                value={newItem.price}
-                                                onChange={(e) =>
-                                                    setNewItem({
-                                                        ...newItem,
-                                                        price: Number(e.target.value),
-                                                    })
-                                                }
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                Cost Price
-                                            </label>
-                                            <Input value={newItem.costPrice} disabled />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                VAT Percentage
-                                            </label>
-                                            <Input
-                                                type="number"
-                                                value={newItem.vatPercent}
-                                                onChange={(e) =>
-                                                    setNewItem({
-                                                        ...newItem,
-                                                        vatPercent: Number(e.target.value),
-                                                    })
-                                                }
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                Category
-                                            </label>
-                                            <Input value={newItem.category} disabled />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                Brand
-                                            </label>
-                                            <Input value={newItem.brand} disabled />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                Stock Available
-                                            </label>
-                                            <Input value={newItem.stock} disabled />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                Quantity *
-                                            </label>
-                                            <Input
-                                                type="number"
-                                                value={newItem.quantity}
-                                                onChange={(e) =>
-                                                    setNewItem({
-                                                        ...newItem,
-                                                        quantity: Number(e.target.value),
-                                                    })
-                                                }
-                                            />
-                                        </div>
-                                    </div>
-                                    <DialogFooter>
-                                        <Button
-                                            variant="outline"
-                                            onClick={() => {
-                                                setEditDialogOpen(false);
-                                                setSelectedItem(null);
-                                            }}
-                                        >
-                                            Cancel
-                                        </Button>
-                                        <Button
-                                            className="bg-purple-600 text-white"
-                                            onClick={() => {
-                                                if (selectedItem && id) {
-                                                    updateOrderItem({
-                                                        variables: {
-                                                            orderId: id,
-                                                            itemId: selectedItem.id,
-                                                            productId: newItem.itemNo,
-                                                            packing: newItem.packing,
-                                                            price: newItem.price,
-                                                            qty: newItem.quantity,
-                                                            vatPerc: newItem.vatPercent,
-                                                        },
-                                                    })
-                                                        .then(() => {
-                                                            setEditDialogOpen(false);
-                                                            setSelectedItem(null);
-                                                            refetch();
-                                                        })
-                                                        .catch((err) =>
-                                                            console.error('Update error:', err)
-                                                        );
-                                                }
-                                            }}
-                                        >
-                                            Save
-                                        </Button>
-                                    </DialogFooter>
-                                </div>
-                            </DialogContent>
-                        </Dialog>
-                        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                            <DialogTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => {
-                                        setSelectedItem(row.original);
-                                        setDeleteDialogOpen(true);
-                                    }}
-                                >
-                                    <Trash className="h-4 w-4" />
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Delete Item</DialogTitle>
-                                    <DialogDescription>
-                                        Are you sure you want to delete the item "
-                                        {selectedItem?.product_name}"? This action cannot be undone.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <DialogFooter>
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => {
-                                            setDeleteDialogOpen(false);
-                                            setSelectedItem(null);
-                                        }}
-                                    >
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        variant="destructive"
-                                        onClick={() => {
-                                            if (selectedItem && id) {
-                                                setItems((prev) =>
-                                                    prev.filter(
-                                                        (item) => item.id !== selectedItem.id
-                                                    )
-                                                );
-                                                deleteOrderItem({
-                                                    variables: {
-                                                        orderId: id,
-                                                        itemId: selectedItem.id,
-                                                    },
-                                                })
-                                                    .then(() => refetch())
-                                                    .catch((err) =>
-                                                        console.error('Delete error:', err)
-                                                    )
-                                                    .finally(() => {
-                                                        setDeleteDialogOpen(false);
-                                                        setSelectedItem(null);
-                                                    });
-                                            }
-                                        }}
-                                    >
-                                        Delete
-                                    </Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                                const prod = products.find(
+                                    (p) => p.prod_code === row.original.product_id
+                                );
+                                setNewItem({
+                                    itemNo: row.original.product_id,
+                                    productName: row.original.product_name,
+                                    packing: row.original.packing || '',
+                                    price: row.original.price,
+                                    quantity: row.original.qty,
+                                    vatPercent: row.original.vat_perc,
+                                    category: prod?.prod_cat || '',
+                                    brand: prod?.brand || '',
+                                    costPrice: prod?.cost_price || 0,
+                                    stock: prod?.stock_available || 0,
+                                });
+                                setSelectedItem(row.original);
+                                setEditDialogOpen(true);
+                            }}
+                        >
+                            <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                                setSelectedItem(row.original);
+                                setDeleteDialogOpen(true);
+                            }}
+                        >
+                            <Trash className="h-4 w-4" />
+                        </Button>
                     </div>
                 ),
             },
         ],
-        [items, editDialogOpen, deleteDialogOpen, products, selectedItem, newItem, id]
+        [products]
     );
 
     const table = useReactTable({
@@ -823,7 +537,7 @@ export default function OrderItemsPage() {
             selectedProduct.stock_available >= newItem.quantity
         ) {
             const newItemData: OrderItem = {
-                id: generateId(), // replaced crypto.randomUUID()
+                id: generateId(),
                 product_id: selectedProduct.prod_code,
                 product_name: selectedProduct.product_name,
                 packing: selectedProduct.packing || '',
@@ -849,7 +563,7 @@ export default function OrderItemsPage() {
                 const response = await addOrderItem({
                     variables: {
                         orderId: id || '',
-                        productId: newItem.itemNo,
+                        productId: selectedProduct.prod_code,
                         packing: selectedProduct.packing || '',
                         price: selectedProduct.unit_price,
                         qty: newItem.quantity,
@@ -859,7 +573,9 @@ export default function OrderItemsPage() {
 
                 if (response.data?.addOrderItem?.status === 'success') {
                     // Refresh from backend
-                    refetch();
+                    await refetch();
+                    // Refetch orders to update line item count
+                    client.refetchQueries({ include: ['getOrders'] });
                 } else {
                     console.error('Failed to add item:', response.data?.addOrderItem?.message);
                     // Rollback on failure
@@ -888,6 +604,113 @@ export default function OrderItemsPage() {
         }
     };
 
+    const handleDeleteSave = async () => {
+        if (selectedItem && id) {
+            // Optimistically remove the item from the UI
+            setItems((prev) => prev.filter((item) => item.id !== selectedItem.id));
+
+            try {
+                const response = await deleteOrderItem({
+                    variables: {
+                        orderId: id,
+                        itemId: selectedItem.id,
+                    },
+                });
+
+                if (response.data?.deleteOrderItem?.status === 'success') {
+                    // Refresh from backend
+                    await refetch();
+                    // Refetch orders to update line item count
+                    client.refetchQueries({ include: ['getOrders'] });
+                } else {
+                    console.error(
+                        'Failed to delete item:',
+                        response.data?.deleteOrderItem?.message
+                    );
+                    // Rollback on failure
+                    setItems((prev) => [...prev, selectedItem]);
+                }
+            } catch (err) {
+                console.error('Error deleting item:', err);
+                // Rollback on error
+                setItems((prev) => [...prev, selectedItem]);
+            }
+
+            setDeleteDialogOpen(false);
+            setSelectedItem(null);
+        }
+    };
+
+    const handleEditSave = async () => {
+        if (selectedItem && id) {
+            const selectedProduct = products.find((p) => p.prod_code === newItem.itemNo);
+            if (!selectedProduct) return;
+
+            const updatedItem: OrderItem = {
+                ...selectedItem,
+                product_id: newItem.itemNo,
+                product_name: newItem.productName,
+                packing: newItem.packing,
+                price: newItem.price,
+                qty: newItem.quantity,
+                line_total: newItem.price * newItem.quantity,
+                vat_perc: newItem.vatPercent,
+                vat_amount: (newItem.price * newItem.quantity * newItem.vatPercent) / 100,
+                net_amount: newItem.price * newItem.quantity * (1 + newItem.vatPercent / 100),
+            };
+
+            // Optimistically update the item in the UI
+            setItems((prev) =>
+                prev.map((item) => (item.id === selectedItem.id ? updatedItem : item))
+            );
+
+            try {
+                const response = await updateOrderItem({
+                    variables: {
+                        orderId: id,
+                        itemId: selectedItem.id,
+                        productId: newItem.itemNo,
+                        packing: newItem.packing,
+                        price: newItem.price,
+                        qty: newItem.quantity,
+                        vatPerc: newItem.vatPercent,
+                    },
+                });
+
+                if (response.data?.updateOrderItem?.status === 'success') {
+                    // Refresh from backend
+                    await refetch();
+                    // Refetch orders to update line item count
+                    client.refetchQueries({ include: ['getOrders'] });
+                } else {
+                    console.error(
+                        'Failed to update item:',
+                        response.data?.updateOrderItem?.message
+                    );
+                    // Rollback on failure
+                    setItems((prev) =>
+                        prev.map((item) => (item.id === selectedItem.id ? selectedItem : item))
+                    );
+                }
+            } catch (err) {
+                console.error('Error updating item:', err);
+                // Rollback on error
+                setItems((prev) =>
+                    prev.map((item) => (item.id === selectedItem.id ? selectedItem : item))
+                );
+            }
+
+            setEditDialogOpen(false);
+            setSelectedItem(null);
+        }
+    };
+
+    const handleBackAndRefresh = () => {
+        // Refetch orders to update the parent OrdersTable
+        client.refetchQueries({ include: ['getOrders'] });
+        window.history.back();
+    };
+
     const totalAmount = items.reduce((sum, item) => sum + item.net_amount, 0);
 
     return (
@@ -906,8 +729,8 @@ export default function OrderItemsPage() {
                     {!loading && !error && (
                         <>
                             <div className="mb-4 justify-start flex gap-4">
-                                <Button variant="outline" onClick={() => window.history.back()}>
-                                    Back Page
+                                <Button variant="outline" onClick={handleBackAndRefresh}>
+                                    <ArrowLeft className="mr-2 h-4 w-4" /> Back
                                 </Button>
                                 <div className="relative flex-1 max-w-sm ml-2">
                                     <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -947,6 +770,7 @@ export default function OrderItemsPage() {
                                                     Select Product *
                                                 </label>
                                                 <Select
+                                                    value={newItem.productName}
                                                     onValueChange={(value) => {
                                                         const prod = products.find(
                                                             (p) => p.product_name === value
@@ -958,7 +782,6 @@ export default function OrderItemsPage() {
                                                                 productName: prod.product_name,
                                                                 packing: prod.packing || '',
                                                                 price: prod.unit_price,
-                                                                quantity: newItem.quantity,
                                                                 vatPercent: prod.vat_perc || 0,
                                                                 category: prod.prod_cat || '',
                                                                 brand: prod.brand || '',
@@ -1037,6 +860,7 @@ export default function OrderItemsPage() {
                                                         Quantity *
                                                     </label>
                                                     <Input
+                                                        type="number"
                                                         value={newItem.quantity}
                                                         onChange={(e) =>
                                                             setNewItem({
@@ -1118,6 +942,181 @@ export default function OrderItemsPage() {
                     )}
                 </div>
             </div>
+            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Edit Item</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">
+                                Select Product *
+                            </label>
+                            <Select
+                                value={newItem.productName}
+                                onValueChange={(value) => {
+                                    const prod = products.find((p) => p.product_name === value);
+                                    if (prod) {
+                                        setNewItem({
+                                            ...newItem,
+                                            itemNo: prod.prod_code,
+                                            productName: prod.product_name,
+                                            packing: prod.packing || '',
+                                            price: prod.unit_price,
+                                            vatPercent: prod.vat_perc || 0,
+                                            category: prod.prod_cat || '',
+                                            brand: prod.brand || '',
+                                            costPrice: prod.cost_price || 0,
+                                            stock: prod.stock_available,
+                                        });
+                                    }
+                                }}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select product" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {products.map((prod) => (
+                                        <SelectItem key={prod.prod_code} value={prod.product_name}>
+                                            {prod.product_name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Product ID
+                                </label>
+                                <Input value={newItem.itemNo} disabled />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Packing
+                                </label>
+                                <Input
+                                    value={newItem.packing}
+                                    onChange={(e) =>
+                                        setNewItem({
+                                            ...newItem,
+                                            packing: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Unit Price
+                                </label>
+                                <Input
+                                    type="number"
+                                    value={newItem.price}
+                                    onChange={(e) =>
+                                        setNewItem({
+                                            ...newItem,
+                                            price: Number(e.target.value),
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Cost Price
+                                </label>
+                                <Input value={newItem.costPrice} disabled />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                    VAT Percentage
+                                </label>
+                                <Input
+                                    type="number"
+                                    value={newItem.vatPercent}
+                                    onChange={(e) =>
+                                        setNewItem({
+                                            ...newItem,
+                                            vatPercent: Number(e.target.value),
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Category
+                                </label>
+                                <Input value={newItem.category} disabled />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Brand
+                                </label>
+                                <Input value={newItem.brand} disabled />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Stock Available
+                                </label>
+                                <Input value={newItem.stock} disabled />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Quantity *
+                                </label>
+                                <Input
+                                    type="number"
+                                    value={newItem.quantity}
+                                    onChange={(e) =>
+                                        setNewItem({
+                                            ...newItem,
+                                            quantity: Number(e.target.value),
+                                        })
+                                    }
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setEditDialogOpen(false);
+                                    setSelectedItem(null);
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button className="bg-purple-600 text-white" onClick={handleEditSave}>
+                                Save
+                            </Button>
+                        </DialogFooter>
+                    </div>
+                </DialogContent>
+            </Dialog>
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Delete Item</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete the item "{selectedItem?.product_name}"?
+                            This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                setDeleteDialogOpen(false);
+                                setSelectedItem(null);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button variant="destructive" onClick={handleDeleteSave}>
+                            Delete
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </BaseLayout>
     );
 }
