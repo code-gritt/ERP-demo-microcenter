@@ -813,13 +813,17 @@ export default function OrderItemsPage() {
 
     const handleAddSave = async () => {
         const selectedProduct = products.find((p) => p.product_name === newItem.productName);
+
+        // Simple fallback ID generator
+        const generateId = () => Math.random().toString(36).substring(2, 10);
+
         if (
             selectedProduct &&
             newItem.quantity > 0 &&
             selectedProduct.stock_available >= newItem.quantity
         ) {
-            const newItemData = {
-                id: crypto.randomUUID(),
+            const newItemData: OrderItem = {
+                id: generateId(), // replaced crypto.randomUUID()
                 product_id: selectedProduct.prod_code,
                 product_name: selectedProduct.product_name,
                 packing: selectedProduct.packing || '',
@@ -837,7 +841,10 @@ export default function OrderItemsPage() {
                     newItem.quantity *
                     (1 + (selectedProduct.vat_perc || 0) / 100),
             };
+
+            // Optimistically add the item to the UI
             setItems((prev) => [...prev, newItemData]);
+
             try {
                 const response = await addOrderItem({
                     variables: {
@@ -849,16 +856,22 @@ export default function OrderItemsPage() {
                         vatPerc: selectedProduct.vat_perc || 0,
                     },
                 });
+
                 if (response.data?.addOrderItem?.status === 'success') {
+                    // Refresh from backend
                     refetch();
                 } else {
                     console.error('Failed to add item:', response.data?.addOrderItem?.message);
-                    setItems((prev) => prev.filter((item) => item.id !== newItemData.id)); // Rollback on failure
+                    // Rollback on failure
+                    setItems((prev) => prev.filter((item) => item.id !== newItemData.id));
                 }
             } catch (err) {
                 console.error('Error adding item:', err);
-                setItems((prev) => prev.filter((item) => item.id !== newItemData.id)); // Rollback on error
+                // Rollback on error
+                setItems((prev) => prev.filter((item) => item.id !== newItemData.id));
             }
+
+            // Reset form and close dialog
             setAddDialogOpen(false);
             setNewItem({
                 itemNo: '',
