@@ -21,7 +21,7 @@ import type { CompaniesResponse, LoginResponse, LoginVariables } from '@/lib/typ
 export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [company, setCompany] = useState('01');
+    const [company, setCompany] = useState('01'); // Default to "01" as per Postman success
     const { login } = useAuthStore();
 
     const [loginMutation, { loading, error: loginError }] = useMutation<
@@ -52,7 +52,6 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
     useEffect(() => {
         if (companiesError) {
             console.error('Companies query error:', companiesError.message);
-
             if (!company) {
                 setCompany('01');
             }
@@ -66,8 +65,8 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
         try {
             const { data } = await loginMutation({
                 variables: {
-                    userName: email,
-                    password,
+                    userName: email.toUpperCase(), // Match Postman case
+                    password: password, // Ensure this matches "SUPER"
                     companyId: company,
                 },
             });
@@ -77,7 +76,7 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
                 window.location.href = '/landing';
             }
         } catch (err) {
-            console.error('Login error:', err);
+            console.error('Login error details:', err);
         }
     };
 
@@ -97,7 +96,6 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         disabled={loading}
-                        placeholder="Enter username"
                     />
                 </div>
 
@@ -110,7 +108,6 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         disabled={loading}
-                        placeholder="Enter password"
                     />
                 </div>
 
@@ -126,8 +123,8 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
                                 placeholder={
                                     companiesLoading
                                         ? 'Loading companies...'
-                                        : companiesError
-                                        ? 'Failed to load companies (using default: 01)'
+                                        : companiesError || !companies.length
+                                        ? 'KEWALRAM AND SONS W.L.L'
                                         : companies.find((c) => c.company_id === company)
                                               ?.company_name || 'KEWALRAM AND SONS W.L.L'
                                 }
@@ -139,7 +136,7 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
                                     {comp.company_name}
                                 </SelectItem>
                             ))}
-                            {!companies.length && !companiesError && (
+                            {!companies.length && companiesError && (
                                 <SelectItem value="01" disabled>
                                     KEWALRAM AND SONS W.L.L
                                 </SelectItem>
@@ -148,7 +145,7 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
                     </Select>
                     {companiesError && (
                         <p className="text-red-500 text-sm">
-                            Error loading companies: {companiesError.message}. Using default ID: 01.
+                            Error loading companies. Using default: KEWALRAM AND SONS W.L.L.
                         </p>
                     )}
                 </div>
