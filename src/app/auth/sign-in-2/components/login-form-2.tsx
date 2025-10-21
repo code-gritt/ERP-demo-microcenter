@@ -141,7 +141,7 @@ export function LoginForm2({ className, ...props }: React.ComponentProps<'form'>
                             ))}
                             {!companies.length && !companiesError && (
                                 <SelectItem value="01" disabled>
-                                    Default: KEWALRAM AND SONS W.L.L (ID: 01)
+                                    KEWALRAM AND SONS W.L.L
                                 </SelectItem>
                             )}
                         </SelectContent>
