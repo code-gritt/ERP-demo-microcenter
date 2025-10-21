@@ -169,21 +169,15 @@ export function LandingNavbar() {
                         </>
                     ) : (
                         <>
-                            <Button variant="outline" asChild className="cursor-pointer">
-                                <a href="/dashboard">
-                                    <LayoutDashboard className="h-4 w-4 mr-2" />
-                                    Dashboard
-                                </a>
-                            </Button>
                             <Button asChild className="cursor-pointer">
                                 <a href="/auth/sign-in-2">Sign In</a>
                             </Button>
+                            <ModeToggle variant="ghost" />
                         </>
                     )}
-                    <ModeToggle variant="ghost" />
                 </div>
 
-                {/* Mobile Menu - SAME AS BEFORE */}
+                {/* Mobile Menu */}
                 <Sheet open={isOpen} onOpenChange={setIsOpen}>
                     <SheetTrigger asChild className="xl:hidden">
                         <Button variant="ghost" size="icon" className="cursor-pointer">
@@ -309,18 +303,19 @@ export function LandingNavbar() {
                             {/* Footer Actions - AUTH CONDITIONAL */}
                             <div className="border-t p-6 space-y-4">
                                 <div className="space-y-3">
-                                    <Button
-                                        variant="outline"
-                                        size="lg"
-                                        asChild
-                                        className="w-full cursor-pointer"
-                                    >
-                                        <a href="/dashboard">
-                                            <LayoutDashboard className="size-4" />
-                                            Dashboard
-                                        </a>
-                                    </Button>
-
+                                    {user && (
+                                        <Button
+                                            variant="outline"
+                                            size="lg"
+                                            asChild
+                                            className="w-full cursor-pointer"
+                                        >
+                                            <a href="/dashboard">
+                                                <LayoutDashboard className="size-4" />
+                                                Dashboard
+                                            </a>
+                                        </Button>
+                                    )}
                                     {user ? (
                                         <Button
                                             variant="destructive"
