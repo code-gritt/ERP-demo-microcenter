@@ -27,6 +27,26 @@ const erpContext = `ERPNextGen is a comprehensive ERP SaaS platform designed to 
 
 Built with React, TypeScript, and Tailwind CSS, ERPNextGen provides secure, scalable solutions for businesses of all sizes. It uses AI to offer predictive analytics, process automation, and actionable insights. The platform targets business owners, operations managers, and IT professionals, with a focus on improving efficiency and decision-making.`;
 
+const microCenterContext = `MicroCenter Group is a leading IT solutions provider based in Bahrain, with over 100 customers in government and private sectors. It has attained a leadership position in the industry within the country, with four group companies and an office in Saudi Arabia. The company was initially started with the aim of providing customized IT solutions to small and medium organizations but has diversified into various other businesses including training and engineering solutions.
+
+**Awards:**
+- Bahrain Tech Award 2019: Best product award won by My LPG - Mobile App during GITEX 2019 at Dubai.
+- Bahrain Tech Award 2018: Best product award won by Visitor Management System (eVMS) during GITEX 2018 at Dubai.
+
+**Key Highlights:**
+- Known for Decades as Your Business Solution Provider.
+- Transforming Organizations with Technologies.
+- Providing Technology Solutions for Your Growth.
+
+**Services Offered:**
+- **IT Services:** IT Business Solutions.
+- **GIS Services:** Survey, Mapping Solutions.
+- **Engineering, Survey & Solar Services:** Engineering, Survey & Solar.
+- **Plastic Cards & Digital Media Solutions:** Plastic, Smart Card Printing, Digital Media services.
+- **Specialized Training:** GIS, AutoDesk & ICT Courses.
+
+For more details, visit https://www.microcentergulf.com/.`;
+
 interface Message {
     id: string;
     role: 'user' | 'assistant';
@@ -57,7 +77,11 @@ export const Bubble = () => {
 
     const model = genAI.getGenerativeModel({
         model: 'gemini-2.5-flash-lite-preview-06-17',
-        systemInstruction: `You are an AI assistant for ERPNextGen. Use the following context to answer questions: ${erpContext}`,
+        systemInstruction: `You are an AI assistant for ERPNextGen. Use the following context to answer questions about ERPNextGen: ${erpContext}
+
+If the user's question is about MicroCenter Group[](https://www.microcentergulf.com/), use this specific context to provide accurate and relevant replies: ${microCenterContext}
+
+For questions about ERPNextGen, refer to the ERP context. For MicroCenter questions, refer to the MicroCenter context. If the question relates to both, integrate the information appropriately. Always provide helpful, concise, and accurate responses.`,
     });
 
     const scrollToBottom = () => {
