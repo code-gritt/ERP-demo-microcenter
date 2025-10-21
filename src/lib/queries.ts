@@ -82,3 +82,45 @@ export const GET_ORDERS_QUERY = gql`
         }
     }
 `;
+
+export const UPDATE_ORDER_ITEM_MUTATION = gql`
+    mutation UpdateOrderItem(
+        $orderId: String!
+        $itemId: String!
+        $productId: String
+        $packing: String
+        $price: Float
+        $qty: Float
+        $vatPerc: Float
+    ) {
+        updateOrderItem(
+            orderId: $orderId
+            itemId: $itemId
+            productId: $productId
+            packing: $packing
+            price: $price
+            qty: $qty
+            vatPerc: $vatPerc
+        ) {
+            status
+            message
+            orderItem {
+                id
+                order_id
+                product_id
+                __typename
+            }
+            __typename
+        }
+    }
+`;
+
+export const DELETE_ORDER_ITEM_MUTATION = gql`
+    mutation DeleteOrderItem($orderId: String!, $itemId: String!) {
+        deleteOrderItem(orderId: $orderId, itemId: $itemId) {
+            status
+            message
+            __typename
+        }
+    }
+`;
