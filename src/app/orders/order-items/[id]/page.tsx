@@ -765,19 +765,19 @@ export default function OrderItemsPage() {
                                 </div>
                             </DialogContent>
                         </Dialog>
+                        {/* DELETE BUTTON AND DIALOG */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                                setSelectedItem(row.original); // set the item to delete
+                                setDeleteDialogOpen(true); // manually open dialog
+                            }}
+                        >
+                            <Trash className="h-4 w-4" />
+                        </Button>
+
                         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                            <DialogTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => {
-                                        setSelectedItem(row.original);
-                                        setDeleteDialogOpen(true);
-                                    }}
-                                >
-                                    <Trash className="h-4 w-4" />
-                                </Button>
-                            </DialogTrigger>
                             <DialogContent>
                                 <DialogHeader>
                                     <DialogTitle>Delete Item</DialogTitle>
@@ -799,18 +799,25 @@ export default function OrderItemsPage() {
                                     <Button
                                         variant="destructive"
                                         onClick={() => {
-                                            if (selectedItem && id) {
-                                                deleteOrderItem({
-                                                    variables: {
-                                                        orderId: id,
-                                                        itemId: selectedItem.id,
-                                                    },
-                                                }).then(() => {
+                                            if (!selectedItem || !id) return;
+
+                                            // Optimistically remove from UI
+                                            setItems((prev) =>
+                                                prev.filter((item) => item.id !== selectedItem.id)
+                                            );
+
+                                            deleteOrderItem({
+                                                variables: { orderId: id, itemId: selectedItem.id },
+                                            })
+                                                .then((res) => {
+                                                    console.log('Delete response:', res);
+                                                    refetch(); // refetch data to sync with backend
+                                                })
+
+                                                .finally(() => {
                                                     setDeleteDialogOpen(false);
                                                     setSelectedItem(null);
-                                                    refetch();
                                                 });
-                                            }
                                         }}
                                     >
                                         Delete
