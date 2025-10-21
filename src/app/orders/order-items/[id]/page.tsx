@@ -15,7 +15,7 @@ import {
     getPaginationRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-import { Search, Download, Plus, Edit, Trash, GripVertical } from 'lucide-react';
+import { Search, Download, Plus, GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -430,33 +430,33 @@ export default function OrderItemsPage() {
             { accessorKey: 'vatPercent', header: 'VAT %', id: 'vatPercent' },
             { accessorKey: 'vatAmount', header: 'VAT Amount', id: 'vatAmount' },
             { accessorKey: 'netAmount', header: 'Net Amount', id: 'netAmount' },
-            {
-                id: 'actions',
-                header: 'Action',
-                cell: ({ row }) => (
-                    <div className="flex space-x-2">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                                // Edit logic
-                            }}
-                        >
-                            <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                                setItems(items.filter((item) => item.id !== row.original.id));
-                                // Note: This local state change won't persist; consider a mutation to delete from backend
-                            }}
-                        >
-                            <Trash className="h-4 w-4" />
-                        </Button>
-                    </div>
-                ),
-            },
+            // {
+            //     id: 'actions',
+            //     header: 'Action',
+            //     cell: ({ row }) => (
+            //         <div className="flex space-x-2">
+            //             <Button
+            //                 variant="ghost"
+            //                 size="icon"
+            //                 onClick={() => {
+            //                     // Edit logic
+            //                 }}
+            //             >
+            //                 <Edit className="h-4 w-4" />
+            //             </Button>
+            //             <Button
+            //                 variant="ghost"
+            //                 size="icon"
+            //                 onClick={() => {
+            //                     setItems(items.filter((item) => item.id !== row.original.id));
+            //                     // Note: This local state change won't persist; consider a mutation to delete from backend
+            //                 }}
+            //             >
+            //                 <Trash className="h-4 w-4" />
+            //             </Button>
+            //         </div>
+            //     ),
+            // },
         ],
         [items]
     );
