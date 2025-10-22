@@ -14,7 +14,7 @@ import {
     useReactTable,
 } from '@tanstack/react-table';
 import { Search, RefreshCw, FileText, Plus, Edit, Trash } from 'lucide-react';
-import { toast } from 'sonner';
+import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
@@ -353,6 +353,7 @@ export function OrdersTable({
         setStartDate('');
         setEndDate('');
         refetchOrders();
+        toast.success('Data refreshed successfully!');
     };
 
     const handleExport = () => {
