@@ -150,11 +150,15 @@ export function OrdersTable({
     });
 
     const filteredOrders = useMemo(() => {
-        return orders.filter((o) => {
+        const filtered = orders.filter((o) => {
             if (startDate && o.orderDate < startDate) return false;
             if (endDate && o.orderDate > endDate) return false;
             return true;
         });
+        if (startDate || endDate) {
+            toast.success('Orders filtered by date successfully!');
+        }
+        return filtered;
     }, [orders, startDate, endDate]);
 
     const columns: ColumnDef<OrderTable>[] = useMemo(
@@ -361,6 +365,7 @@ export function OrdersTable({
         const ws = XLSX.utils.json_to_sheet(filteredOrders);
         XLSX.utils.book_append_sheet(wb, ws, 'Orders');
         XLSX.writeFile(wb, 'orders.xlsx');
+        toast.success('Orders exported to Excel successfully!');
     };
 
     const handleFormChange = (field: keyof OrderTable, value: any) => {
